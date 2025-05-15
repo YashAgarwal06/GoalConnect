@@ -1,59 +1,41 @@
-import React, { useState } from 'react';
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
 
-const Register = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+const authRoutes = require('./routes/auth'); // Ensure you have this file
+const User = require('./models/User'); // Add this line
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('http://localhost:3001/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+const app = express();
 
-      const data = await res.json();
-      if (res.ok) {
-        setMessage('Registration successful!');
-      } else {
-        setMessage(data.error || 'Registration failed.');
-      }
-    } catch (error) {
-      setMessage('Network error during registration.');
-    }
-  };
+app.use(cors());
+app.use(express.json());
 
-  return (
-    <div className="register-container">
-      <h1>Register</h1>
-      <form onSubmit={handleRegister}>
-        <div className="form-group">
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Register</button>
-      </form>
-      <p>{message}</p>
-    </div>
-  );
-};
+app.get('/', (req, res) => {
+  res.send('GoalConnect Backend is running!');
+});
 
-export default Register;
+app.use('/api/auth', authRoutes);
+
+// Add more detailed MongoDB connection logging
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('connected', async () => {
+  console.log('✅ MongoDB connected successfully');
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('❌ MongoDB disconnected');
+});
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    const port = process.env.PORT || 3001;
+    app.listen(port, () => console.log(`✅ Server running on port ${port}`));
+  })
+  .catch(err => {
+    console.error('❌ Initial MongoDB connection error:', err);
+    process.exit(1);
+  });
