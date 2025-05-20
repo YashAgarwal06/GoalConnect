@@ -3,6 +3,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
 const GoalHistory = () => {
+  const [selectedTimeMetric, setSelectedTimeMetric] = useState('7days');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('calendar');
   const [dailyGoals, setDailyGoals] = useState([]);
@@ -69,16 +70,21 @@ const GoalHistory = () => {
   };
 
   // Function to handle time metric selection
+  const handleTimeMetricChange = (metric) => {
+    setSelectedTimeMetric(metric);
+  };
+
   // Function to handle date change in calendar
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
   
+  // Calculate completion rate based on selected time metric (would be replaced by backend data)
+  const getCompletionRate = () => {
+    return 50;
 
   return (
     <div className="goal-history-container">
-      <h1>Goal History</h1>
-      <p>This is the Goal History screen where users will be able to see their past goals and progress.</p>
       <h1>Memories & Progress History</h1>
       
       <div className="history-tabs">
@@ -143,6 +149,49 @@ const GoalHistory = () => {
                 <p className="no-goals-message">No goals set for this date</p>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      
+      {activeTab === 'stats' && (
+        <div className="stats-view">
+          <div className="completion-stats">
+            <h2>Goal Completion Rate</h2>
+            
+            <div className="time-metrics">
+              <button 
+                className={selectedTimeMetric === '7days' ? 'active' : ''} 
+                onClick={() => handleTimeMetricChange('7days')}
+              >
+                Last 7 Days
+              </button>
+              <button 
+                className={selectedTimeMetric === 'month' ? 'active' : ''} 
+                onClick={() => handleTimeMetricChange('month')}
+              >
+                Last Month
+              </button>
+              <button 
+                className={selectedTimeMetric === 'year' ? 'active' : ''} 
+                onClick={() => handleTimeMetricChange('year')}
+              >
+                Last Year
+              </button>
+            </div>
+            
+            <div className="progress-container">
+              <div className="progress-label">
+                <span>{getCompletionRate()}%</span>
+                <span>Time Period: {
+                  selectedTimeMetric === '7days' ? 'Last 7 Days' : 
+                  selectedTimeMetric === 'month' ? 'Last Month' : 'Last Year'
+                }</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${getCompletionRate()}%` }}></div>
+              </div>
+            </div>
+            
           </div>
         </div>
       )}
