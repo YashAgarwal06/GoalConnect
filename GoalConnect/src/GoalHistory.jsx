@@ -145,18 +145,7 @@ const GoalHistory = () => {
             </div>
           </div>
         </div>
-          <div className="progress-label">
-            <span>50%</span>
-            <span>Time Period: {
-              selectedTimeMetric === '7days' ? 'Last 7 Days' : 
-              selectedTimeMetric === 'month' ? 'Last Month' : 'Last Year'
-            }</span>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: '50%' }}></div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
