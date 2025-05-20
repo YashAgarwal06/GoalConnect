@@ -526,3 +526,235 @@ input::placeholder {
   color: white;
 }
 
+/* Goal History styles */
+.goal-history-container {
+  max-width: 900px;
+  width: 100%;
+}
+
+/* Tab navigation for history views */
+.history-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  gap: 12px;
+}
+
+.history-tabs button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  background-color: white;
+  color: var(--primary);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.history-tabs button.active {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Calendar view styles */
+.calendar-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.calendar-container {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.goal-calendar {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  height: 350px;
+}
+
+.react-calendar__year-view__months__month {
+  color: black;
+}
+
+.react-calendar__navigation__label {
+  font-size: 14px;
+  text-wrap: nowrap;
+  width: 170px;
+  color: black;
+}
+
+.react-calendar__navigation__arrow {
+  color: black;
+}
+
+/* Override react-calendar default styles */
+.react-calendar {
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.react-calendar__month-view__days__day{
+  color: black;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #ccc;
+}
+
+.react-calendar__tile--now {
+  background-color: var(--accent-dark);
+  color: white;
+}
+
+.react-calendar__tile--active {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* Calendar dot indicator for days with goals/events */
+.calendar-dot {
+  height: 8px;
+  width: 8px;
+  background-color: var(--secondary);
+  border-radius: 50%;
+  margin: 3px auto 0;
+}
+
+/* Selected date details */
+.selected-date-details {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.daily-goals {
+  text-align: left;
+  margin-top: 15px;
+}
+
+.daily-goals h4 {
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.daily-goals ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.daily-goals li {
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: var(--background);
+  position: relative;
+  padding-left: 35px;
+}
+
+.daily-goals li:before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+}
+
+.daily-goals li.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.daily-goals li.completed:before {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+
+/* Goal buttons in daily view */
+.goals-button-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 15px;
+  background-color: var(--background);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  color: var(--text);
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.goal-button:hover {
+  transform: translateY(-2px);
+  background-color: #e8ecf0;
+}
+
+.goal-button.completed {
+  background-color: var(--success-light);
+  color: var(--success);
+}
+
+.goal-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  margin-right: 12px;
+  color: transparent;
+  transition: all 0.3s ease;
+}
+
+.goal-button.completed .goal-check {
+  background-color: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.goal-title {
+  flex-grow: 1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.goal-button.completed .goal-title {
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.no-goals-message {
+  text-align: center;
+  color: var(--text-light);
+  font-style: italic;
+  padding: 20px;
+}
+
