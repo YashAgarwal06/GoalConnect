@@ -82,6 +82,7 @@ const GoalHistory = () => {
   // Calculate completion rate based on selected time metric (would be replaced by backend data)
   const getCompletionRate = () => {
     return 50;
+  };
 
   return (
     <div className="goal-history-container">
