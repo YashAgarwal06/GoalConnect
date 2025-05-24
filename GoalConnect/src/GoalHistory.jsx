@@ -7,32 +7,40 @@ const GoalHistory = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('calendar');
   const [dailyGoals, setDailyGoals] = useState([]);
+  const [error, setError] = useState(null);
   
   // Fetch daily goals for selected date
   useEffect(() => {
     const fetchDailyGoals = async () => {
       try {
-        const response = await fetch(`put some url here`);
+        const date = new Date(selectedDate);
+        date.setHours(0, 0, 0, 0);
+        const formattedDate = date.toISOString().split('T')[0];
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`http://localhost:3001/api/goals/date/${formattedDate}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
         if (response.ok) {
           const data = await response.json();
-          setDailyGoals(data.goals || []);
+          setDailyGoals(data.map(goal => ({
+            id: goal._id,
+            title: goal.description,
+            completed: goal.isCompleted
+          })));
+          setError(null);
         } else {
-          console.error('Failed to fetch daily goals');
-          // If API fails, use sample data
-          setDailyGoals([
-            { id: 1, title: 'Morning meditation', completed: false },
-            { id: 2, title: 'Read for 30 minutes', completed: false },
-            { id: 3, title: 'Complete workout routine', completed: false }
-          ]);
+          const errorData = await response.json();
+          setError(errorData.error || 'Failed to fetch goals');
+          setDailyGoals([]);
         }
       } catch (error) {
-        console.error('Error fetching daily goals:', error);
-        // If API fails, use sample data
-        setDailyGoals([
-          { id: 1, title: 'Morning meditation', completed: false },
-          { id: 2, title: 'Read for 30 minutes', completed: false },
-          { id: 3, title: 'Complete workout routine', completed: false }
-        ]);
+        setError('Failed to connect to the server');
+        setDailyGoals([]);
       }
     };
 
@@ -42,30 +50,32 @@ const GoalHistory = () => {
   // Function to toggle goal completion
   const toggleGoalCompletion = async (goalId) => {
     try {
-      const updatedGoals = dailyGoals.map(goal => 
-        goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
-      );
-      setDailyGoals(updatedGoals);
-
-      // Send update to backend
-      const goalToUpdate = updatedGoals.find(g => g.id === goalId);
-      const response = await fetch(`put some url here`, {
+      const token = localStorage.getItem('token');
+      const goalToUpdate = dailyGoals.find(g => g.id === goalId);
+      
+      const response = await fetch(`http://localhost:3001/api/goals/${goalId}`, {
         method: 'PATCH',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ completed: goalToUpdate.completed })
+        body: JSON.stringify({ isCompleted: !goalToUpdate.completed })
       });
 
-      if (!response.ok) {
-        // If update fails, revert the change
-        // setDailyGoals(dailyGoals);
-        console.error('Failed to update goal completion status');
+      if (response.ok) {
+        const updatedGoal = await response.json();
+        setDailyGoals(dailyGoals.map(goal => 
+          goal.id === goalId 
+            ? { ...goal, completed: updatedGoal.isCompleted }
+            : goal
+        ));
+        setError(null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to update goal');
       }
     } catch (error) {
-      // If update fails, revert the change
-      // setDailyGoals(dailyGoals);
-      console.error('Error updating goal completion:', error);
+      setError('Failed to connect to the server');
     }
   };
 
@@ -87,6 +97,8 @@ const GoalHistory = () => {
   return (
     <div className="goal-history-container">
       <h1>Memories & Progress History</h1>
+      
+      {error && <div className="error-message">{error}</div>}
       
       <div className="history-tabs">
         <button 

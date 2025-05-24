@@ -32,13 +32,20 @@ router.get('/', auth, async (req, res) => {
 router.get('/date/:date', auth, async (req, res) => {
   try {
     const date = new Date(req.params.date);
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
     const goals = await Goal.find({
       user: req.user._id,
       date: {
-        $gte: new Date(date.setHours(0, 0, 0)),
-        $lt: new Date(date.setHours(23, 59, 59))
+        $gte: startOfDay,
+        $lt: endOfDay
       }
     });
+    
     res.json(goals);
   } catch (error) {
     res.status(500).json({ error: error.message });
