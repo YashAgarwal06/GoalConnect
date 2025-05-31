@@ -24,7 +24,7 @@ const GoalHistory = () => {
             'Content-Type': 'application/json'
           }
         });
-
+        
         if (response.ok) {
           const data = await response.json();
           setDailyGoals(data.map(goal => ({

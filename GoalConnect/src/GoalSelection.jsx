@@ -35,9 +35,12 @@ function GoalSelection() {
     setStatus('Submitting...');
 
     try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
       const goalData = {
         description: selectedGoal,
-        date: new Date(),
+        date: today,
         category: 'personal',
         priority: 'medium'
       };

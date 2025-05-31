@@ -31,12 +31,14 @@ router.get('/', auth, async (req, res) => {
 // Get goals for a specific date
 router.get('/date/:date', auth, async (req, res) => {
   try {
-    const date = new Date(req.params.date);
+    // Parse the date as UTC to avoid timezone issues
+    const dateString = req.params.date + 'T00:00:00.000Z';
+    const date = new Date(dateString);
+    
     const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
     
     const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    endOfDay.setUTCHours(23, 59, 59, 999);
     
     const goals = await Goal.find({
       user: req.user._id,
