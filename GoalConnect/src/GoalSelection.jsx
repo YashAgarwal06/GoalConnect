@@ -25,20 +25,43 @@ function GoalSelection() {
       return;
     }
 
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setStatus('❌ Please log in first.');
+      return;
+    }
+
     setStatus('Submitting...');
 
     try {
-      const res = await fetch('/api/submit-goal', {
+      const goalData = {
+        description: selectedGoal,
+        date: new Date(),
+        category: 'personal',
+        priority: 'medium'
+      };
+
+      const res = await fetch('http://localhost:3001/api/goals', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goal: selectedGoal }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(goalData),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit goal');
+      }
+
       const data = await res.json();
-      setStatus(`✅ Goal submitted! You and ${data.matchCount || 'some'} others chose a similar goal.`);
+      setStatus(`✅ Goal submitted successfully! Your goal "${selectedGoal}" has been saved.`);
+      setSelectedGoal(''); // Clear selection after successful submission
     } catch (err) {
       console.error(err);
-      setStatus('❌ Error submitting goal.');
+      setStatus(`❌ Error submitting goal: ${err.message}`);
     }
   };
 

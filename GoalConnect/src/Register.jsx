@@ -19,6 +19,7 @@ const Register = () => {
 
       const data = await res.json();
       if (res.ok) {
+        localStorage.setItem('token', data.token);
         setMessage('Registration successful!');
       } else {
         setMessage(data.error || 'Registration failed.');
