@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './GoalSelection.css';
 
 const goalOptions = [
@@ -17,6 +17,43 @@ const goalOptions = [
 function GoalSelection() {
   const [selectedGoal, setSelectedGoal] = useState('');
   const [status, setStatus] = useState(null);
+  const [currentGoal, setCurrentGoal] = useState(null); // Store the saved goal
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+
+  // Check if user already has a goal for today
+  useEffect(() => {
+    const fetchTodayGoal = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`http://localhost:3001/api/goals/date/${today}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const goals = await response.json();
+          if (goals.length > 0) {
+            setCurrentGoal(goals[0]);
+            setIsCompleted(goals[0].isCompleted);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching today\'s goal:', error);
+      }
+    };
+
+    fetchTodayGoal();
+  }, []);
+
+  const handleGoalSelect = (goal) => {
+    setSelectedGoal(goal);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +62,6 @@ function GoalSelection() {
       return;
     }
 
-    // Check if user is authenticated
     const token = localStorage.getItem('token');
     if (!token) {
       setStatus('❌ Please log in first.');
@@ -60,34 +96,178 @@ function GoalSelection() {
       }
 
       const data = await res.json();
-      setStatus(`✅ Goal submitted successfully! Your goal "${selectedGoal}" has been saved.`);
-      setSelectedGoal(''); // Clear selection after successful submission
+      setCurrentGoal(data);
+      setIsCompleted(data.isCompleted);
+      setStatus(`✅ Goal submitted successfully!`);
+      setSelectedGoal('');
     } catch (err) {
       console.error(err);
       setStatus(`❌ Error submitting goal: ${err.message}`);
     }
   };
 
+  const toggleCompletion = async () => {
+    if (!currentGoal) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://localhost:3001/api/goals/${currentGoal._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isCompleted: !isCompleted })
+      });
+
+      if (response.ok) {
+        const updatedGoal = await response.json();
+        setCurrentGoal(updatedGoal);
+        setIsCompleted(updatedGoal.isCompleted);
+      }
+    } catch (error) {
+      console.error('Error updating goal completion:', error);
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      // For now, just store the file name as imageUrl
+      const reader = new FileReader();
+      reader.onload = () => {
+        updateGoalImage(file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const updateGoalImage = async (imageUrl) => {
+    if (!currentGoal) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://localhost:3001/api/goals/${currentGoal._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl })
+      });
+
+      if (response.ok) {
+        const updatedGoal = await response.json();
+        setCurrentGoal(updatedGoal);
+      }
+    } catch (error) {
+      console.error('Error updating goal image:', error);
+    }
+  };
+
+  const resetSelection = () => {
+    setCurrentGoal(null);
+    setIsCompleted(false);
+    setImageFile(null);
+    setStatus(null);
+  };
+
+  // If user already has a goal for today, show the goal management view
+  if (currentGoal) {
+    return (
+      <div className="goal-selection-container">
+        <h2>Your Goal for Today</h2>
+        <div className="current-goal-view">
+          <div className="goal-card selected-goal-card">
+            <h3>{currentGoal.description}</h3>
+            
+            <div className="goal-management-sections">
+              <div className="completion-section">
+                <h4>Progress</h4>
+                <label className="completion-toggle">
+                  <input
+                    type="checkbox"
+                    checked={isCompleted}
+                    onChange={toggleCompletion}
+                  />
+                  <span className="checkmark"></span>
+                  Mark as {isCompleted ? 'Incomplete' : 'Complete'}
+                </label>
+                {isCompleted && <span className="completion-status">✅ Completed!</span>}
+              </div>
+              
+              <div className="image-section">
+                <h4>Add Memory</h4>
+                <div className="image-upload-area">
+                  <label htmlFor="goal-image" className="image-upload-label">
+                    📷 Upload Photo
+                  </label>
+                  <input
+                    id="goal-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="image-upload-input"
+                  />
+                  {currentGoal.imageUrl && (
+                    <div className="uploaded-image-info">
+                      <span className="image-icon">🖼️</span>
+                      <span className="image-name">{currentGoal.imageUrl}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="goal-actions-bottom" style={{ marginTop: '20px' }}>
+            <button onClick={resetSelection} className="reset-button">
+              Choose Different Goal
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="goal-selection-container">
       <h2>Select Your Goal for Today</h2>
-      <form onSubmit={handleSubmit}>
-        <select
-          value={selectedGoal}
-          onChange={(e) => setSelectedGoal(e.target.value)}
-          className="goal-dropdown"
-        >
-          <option value="">-- Choose a General Goal --</option>
+      
+      {!selectedGoal ? (
+        <div className="goal-options-grid">
           {goalOptions.map((goal, index) => (
-            <option key={index} value={goal}>
+            <button
+              key={index}
+              className="goal-option-card"
+              onClick={() => handleGoalSelect(goal)}
+            >
               {goal}
-            </option>
+            </button>
           ))}
-        </select>
-        <button type="submit" className="submit-button">
-          Submit Goal
-        </button>
-      </form>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="goal-confirmation">
+          <div className="selected-goal-preview">
+            <h3>Selected Goal:</h3>
+            <p>{selectedGoal}</p>
+          </div>
+          <div className="form-actions">
+            <button type="submit" className="submit-button">
+              Confirm Goal
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setSelectedGoal('')}
+              className="back-button"
+            >
+              Choose Different Goal
+            </button>
+          </div>
+        </form>
+      )}
+      
       {status && <p className="status-message">{status}</p>}
     </div>
   );
