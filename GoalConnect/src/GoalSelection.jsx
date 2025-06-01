@@ -20,6 +20,7 @@ function GoalSelection() {
   const [currentGoal, setCurrentGoal] = useState(null); // Store the saved goal
   const [isCompleted, setIsCompleted] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Check if user already has a goal for today
   useEffect(() => {
@@ -53,6 +54,7 @@ function GoalSelection() {
 
   const handleGoalSelect = (goal) => {
     setSelectedGoal(goal);
+    setIsDropdownOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -261,16 +263,78 @@ function GoalSelection() {
       <h2>Select Your Goal for Today</h2>
       
       {!selectedGoal ? (
-        <div className="goal-options-grid">
-          {goalOptions.map((goal, index) => (
-            <button
-              key={index}
-              className="goal-option-card"
-              onClick={() => handleGoalSelect(goal)}
+        <div className="goal-selection-form" style={{ position: 'relative' }}>
+          <div className="custom-dropdown">
+            <div 
+              className="dropdown-trigger"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                fontSize: '16px',
+                border: '2px solid #e1e5e9',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                transition: 'border-color 0.3s ease',
+                borderColor: isDropdownOpen ? '#4CAF50' : '#e1e5e9'
+              }}
             >
-              {goal}
-            </button>
-          ))}
+              <span style={{ color: selectedGoal ? '#333' : '#6c757d' }}>
+                {selectedGoal || '🎯 Choose your goal for today...'}
+              </span>
+              <span style={{ 
+                transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease'
+              }}>
+                ▼
+              </span>
+            </div>
+            
+            {isDropdownOpen && (
+              <div 
+                className="dropdown-options"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '0',
+                  right: '0',
+                  backgroundColor: 'white',
+                  border: '2px solid #e1e5e9',
+                  borderTop: 'none',
+                  borderRadius: '0 0 8px 8px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                  zIndex: 1000,
+                  maxHeight: '300px',
+                  overflowY: 'auto'
+                }}
+              >
+                {goalOptions.map((goal, index) => (
+                  <div
+                    key={index}
+                    className="dropdown-option-card"
+                    onClick={() => handleGoalSelect(goal)}
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      borderBottom: index < goalOptions.length - 1 ? '1px solid #f1f3f4' : 'none',
+                      transition: 'background-color 0.2s ease',
+                      fontSize: '15px',
+                      backgroundColor: 'white'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                  >
+                    {goal}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="goal-confirmation">
