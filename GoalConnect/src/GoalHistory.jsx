@@ -8,6 +8,12 @@ const GoalHistory = () => {
   const [activeTab, setActiveTab] = useState('calendar');
   const [dailyGoals, setDailyGoals] = useState([]);
   const [error, setError] = useState(null);
+  const [statistics, setStatistics] = useState({
+    totalGoals: 0,
+    completedGoals: 0,
+    notCompletedGoals: 0,
+    completionRate: 0
+  });
   
   // Fetch daily goals for selected date
   useEffect(() => {
@@ -47,6 +53,37 @@ const GoalHistory = () => {
     fetchDailyGoals();
   }, [selectedDate]);
 
+  // Fetch goal statistics for selected time metric
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:3001/api/goals/stats/${selectedTimeMetric}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setStatistics(data);
+          setError(null);
+        } else {
+          const errorData = await response.json();
+          setError(errorData.error || 'Failed to fetch statistics');
+        }
+      } catch (error) {
+        setError('Failed to connect to the server');
+      }
+    };
+
+    // Only fetch statistics when we're on the stats tab
+    if (activeTab === 'stats') {
+      fetchStatistics();
+    }
+  }, [selectedTimeMetric, activeTab]);
+
   // Function to toggle goal completion
   const toggleGoalCompletion = async (goalId) => {
     try {
@@ -70,6 +107,20 @@ const GoalHistory = () => {
             : goal
         ));
         setError(null);
+        
+        // Refresh statistics after goal completion change
+        if (activeTab === 'stats') {
+          const statsResponse = await fetch(`http://localhost:3001/api/goals/stats/${selectedTimeMetric}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            setStatistics(statsData);
+          }
+        }
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to update goal');
@@ -89,9 +140,9 @@ const GoalHistory = () => {
     setSelectedDate(date);
   };
   
-  // Calculate completion rate based on selected time metric (would be replaced by backend data)
+  // Get completion rate from statistics
   const getCompletionRate = () => {
-    return 50;
+    return statistics.completionRate;
   };
 
   return (
@@ -199,6 +250,10 @@ const GoalHistory = () => {
                   selectedTimeMetric === '7days' ? 'Last 7 Days' : 
                   selectedTimeMetric === 'month' ? 'Last Month' : 'Last Year'
                 }</span>
+              </div>
+              <div className="goal-stats-details">
+                <p>{statistics.completedGoals} out of {statistics.totalGoals} goals completed</p>
+                <p>{statistics.notCompletedGoals} goals remaining</p>
               </div>
               <div className="progress-bar">
                 <div className="progress-fill" style={{ width: `${getCompletionRate()}%` }}></div>

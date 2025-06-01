@@ -118,4 +118,51 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// Get goal statistics for different time periods
+router.get('/stats/:period', auth, async (req, res) => {
+  try {
+    const { period } = req.params;
+    let daysBack;
+    
+    switch (period) {
+      case '7days':
+        daysBack = 7;
+        break;
+      case 'month':
+        daysBack = 30;
+        break;
+      case 'year':
+        daysBack = 365;
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid period. Use 7days, month, or year' });
+    }
+    
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysBack);
+    
+    const goals = await Goal.find({
+      user: req.user._id,
+      date: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    });
+    
+    const totalGoals = goals.length;
+    const completedGoals = goals.filter(goal => goal.isCompleted).length;
+    const completionRate = totalGoals === 0 ? 0 : Math.round((completedGoals / totalGoals) * 100);
+    
+    res.json({
+      totalGoals,
+      completedGoals,
+      notCompletedGoals: totalGoals - completedGoals,
+      completionRate
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router; 
