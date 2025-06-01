@@ -33,7 +33,11 @@ const GoalHistory = () => {
         
         if (response.ok) {
           const data = await response.json();
-          setDailyGoals(data.map(goal => ({
+          // Filter out duplicate goals by description to show only unique tasks
+          const uniqueGoals = data.filter((goal, index, self) => 
+            index === self.findIndex(g => g.description === goal.description)
+          );
+          setDailyGoals(uniqueGoals.map(goal => ({
             id: goal._id,
             title: goal.description,
             completed: goal.isCompleted

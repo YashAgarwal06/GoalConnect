@@ -6,6 +6,29 @@ const auth = require('../middleware/auth');
 // Create a new goal
 router.post('/', auth, async (req, res) => {
   try {
+    const { description, date } = req.body;
+    
+    // Check if a goal with the same description already exists for this user on this date
+    const goalDate = new Date(date);
+    const startOfDay = new Date(goalDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(goalDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const existingGoal = await Goal.findOne({
+      user: req.user._id,
+      description: description,
+      date: {
+        $gte: startOfDay,
+        $lt: endOfDay
+      }
+    });
+    
+    if (existingGoal) {
+      return res.status(400).json({ error: 'You already have this goal for today' });
+    }
+    
     const goal = new Goal({
       ...req.body,
       user: req.user._id

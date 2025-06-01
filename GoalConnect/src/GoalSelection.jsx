@@ -68,6 +68,31 @@ function GoalSelection() {
       return;
     }
 
+    // Check if this goal already exists for today
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const checkResponse = await fetch(`http://localhost:3001/api/goals/date/${today}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (checkResponse.ok) {
+        const existingGoals = await checkResponse.json();
+        const duplicateGoal = existingGoals.find(goal => 
+          goal.description.trim().toLowerCase() === selectedGoal.trim().toLowerCase()
+        );
+        if (duplicateGoal) {
+          setStatus('⚠️ You already have this goal for today!');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking existing goals:', error);
+      // Continue with submission even if check fails, backend will handle it
+    }
+
     setStatus('Submitting...');
 
     try {
