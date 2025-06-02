@@ -245,51 +245,77 @@ function GoalSelection() {
   if (currentGoal) {
     return (
       <div className="goal-selection-container">
-        <h2>Your Goal for Today</h2>
+        <h2 className="goal-management-title">
+          Your Goal for Today
+        </h2>
+        
         <div className="current-goal-view">
-          <div className="goal-card selected-goal-card">
-            <h3>{currentGoal.description}</h3>
-            
-            <div className="goal-management-sections">
-              <div className="completion-section">
-                <h4>Progress</h4>
+          {/* Goal Display Card */}
+          <div className="goal-display-card">
+            <div className="goal-header">
+              <span className="goal-icon">🎯</span>
+              <h3 className="goal-title">
+                {currentGoal.description}
+              </h3>
+            </div>
+
+            {/* Progress Section */}
+            <div className="goal-section">
+              <h4 className="section-title">
+                <span className="section-icon">📊</span>
+                Progress
+              </h4>
+              <div className="section-content">
                 <label className="completion-toggle">
                   <input
                     type="checkbox"
                     checked={isCompleted}
                     onChange={toggleCompletion}
+                    className="completion-checkbox"
                   />
-                  <span className="checkmark"></span>
-                  Mark as {isCompleted ? 'Incomplete' : 'Complete'}
+                  <span className="completion-label">
+                    Mark as {isCompleted ? 'Incomplete' : 'Complete'}
+                  </span>
                 </label>
-                {isCompleted && <span className="completion-status">✅ Completed!</span>}
+                {isCompleted && (
+                  <div className="completion-status">
+                    ✅ Goal Completed! Great job!
+                  </div>
+                )}
               </div>
-              
-              <div className="image-section">
-                <h4>Add Memory</h4>
-                <div className="image-upload-area">
-                  <label htmlFor="goal-image" className="image-upload-label">
-                    📷 Upload Photo
-                  </label>
-                  <input
-                    id="goal-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="image-upload-input"
-                  />
-                  {currentGoal.imageUrl && (
-                    <div className="uploaded-image-info">
-                      <span className="image-icon">🖼️</span>
-                      <span className="image-name">{currentGoal.imageUrl}</span>
-                    </div>
-                  )}
-                </div>
+            </div>
+
+            {/* Memory/Image Section */}
+            <div className="goal-section">
+              <h4 className="section-title">
+                <span className="section-icon">📷</span>
+                Add Memory
+              </h4>
+              <div className="section-content">
+                <label htmlFor="goal-image" className="upload-button">
+                  📷 Upload Photo
+                </label>
+                <input
+                  id="goal-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden-file-input"
+                />
+                {currentGoal.imageUrl && (
+                  <div className="uploaded-image-info">
+                    <span className="image-icon">🖼️</span>
+                    <span className="image-name">
+                      {currentGoal.imageUrl}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
           
-          <div className="goal-actions-bottom" style={{ marginTop: '20px' }}>
+          {/* Action Button */}
+          <div className="action-buttons-container">
             <button onClick={resetSelection} className="reset-button">
               Choose Different Goal
             </button>
@@ -314,68 +340,19 @@ function GoalSelection() {
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               placeholder="🎯 Type your goal or choose from suggestions..."
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                fontSize: '16px',
-                border: '2px solid #e1e5e9',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                outline: 'none',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                transition: 'border-color 0.3s ease',
-                borderColor: isDropdownOpen ? '#4CAF50' : '#e1e5e9',
-                paddingRight: '40px', // Make room for dropdown arrow
-                color: 'black'
-              }}
+              className={`goal-input ${isDropdownOpen ? 'dropdown-open' : ''}`}
             />
-            <span 
-              style={{ 
-                position: 'absolute',
-                right: '16px',
-                top: '50%',
-                transform: `translateY(-50%) ${isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'}`,
-                transition: 'transform 0.3s ease',
-                pointerEvents: 'none',
-                color: '#6c757d'
-              }}
-            >
+            <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>
               ▼
             </span>
             
             {isDropdownOpen && filteredOptions.length > 0 && (
-              <div 
-                className="dropdown-options"
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: '0',
-                  right: '0',
-                  backgroundColor: 'white',
-                  border: '2px solid #e1e5e9',
-                  borderTop: 'none',
-                  borderRadius: '0 0 8px 8px',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                  zIndex: 1000,
-                  maxHeight: '300px',
-                  overflowY: 'auto'
-                }}
-              >
+              <div className="dropdown-options">
                 {filteredOptions.map((goal, index) => (
                   <div
                     key={index}
                     className="dropdown-option-card"
                     onClick={() => handleGoalSelect(goal)}
-                    style={{
-                      padding: '12px 16px',
-                      cursor: 'pointer',
-                      borderBottom: index < filteredOptions.length - 1 ? '1px solid #f1f3f4' : 'none',
-                      transition: 'background-color 0.2s ease',
-                      fontSize: '15px',
-                      backgroundColor: 'white'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                   >
                     {goal}
                   </div>
