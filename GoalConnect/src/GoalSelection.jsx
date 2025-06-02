@@ -16,11 +16,13 @@ const goalOptions = [
 
 function GoalSelection() {
   const [selectedGoal, setSelectedGoal] = useState('');
+  const [inputValue, setInputValue] = useState(''); // New state for input text
   const [status, setStatus] = useState(null);
   const [currentGoal, setCurrentGoal] = useState(null); // Store the saved goal
   const [isCompleted, setIsCompleted] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState(goalOptions); // New state for filtered options
 
   // Check if user already has a goal for today
   useEffect(() => {
@@ -54,7 +56,46 @@ function GoalSelection() {
 
   const handleGoalSelect = (goal) => {
     setSelectedGoal(goal);
+    setInputValue(goal); // Update input value when selecting from dropdown
     setIsDropdownOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // Filter options based on input
+    const filtered = goalOptions.filter(option =>
+      option.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredOptions(filtered);
+    
+    // Show dropdown if there are filtered options and input is not empty
+    setIsDropdownOpen(value.length > 0 && filtered.length > 0);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
+      e.preventDefault();
+      setSelectedGoal(inputValue.trim());
+      setIsDropdownOpen(false);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (inputValue.length > 0) {
+      setIsDropdownOpen(filteredOptions.length > 0);
+    } else {
+      setFilteredOptions(goalOptions);
+      setIsDropdownOpen(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding dropdown to allow for option selection
+    setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 200);
   };
 
   const handleSubmit = async (e) => {
@@ -265,9 +306,14 @@ function GoalSelection() {
       {!selectedGoal ? (
         <div className="goal-selection-form" style={{ position: 'relative' }}>
           <div className="custom-dropdown">
-            <div 
-              className="dropdown-trigger"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            <input
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              placeholder="🎯 Type your goal or choose from suggestions..."
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -275,27 +321,29 @@ function GoalSelection() {
                 border: '2px solid #e1e5e9',
                 borderRadius: '8px',
                 backgroundColor: 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                outline: 'none',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 transition: 'border-color 0.3s ease',
-                borderColor: isDropdownOpen ? '#4CAF50' : '#e1e5e9'
+                borderColor: isDropdownOpen ? '#4CAF50' : '#e1e5e9',
+                paddingRight: '40px', // Make room for dropdown arrow
+                color: 'black'
+              }}
+            />
+            <span 
+              style={{ 
+                position: 'absolute',
+                right: '16px',
+                top: '50%',
+                transform: `translateY(-50%) ${isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'}`,
+                transition: 'transform 0.3s ease',
+                pointerEvents: 'none',
+                color: '#6c757d'
               }}
             >
-              <span style={{ color: selectedGoal ? '#333' : '#6c757d' }}>
-                {selectedGoal || '🎯 Choose your goal for today...'}
-              </span>
-              <span style={{ 
-                transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease'
-              }}>
-                ▼
-              </span>
-            </div>
+              ▼
+            </span>
             
-            {isDropdownOpen && (
+            {isDropdownOpen && filteredOptions.length > 0 && (
               <div 
                 className="dropdown-options"
                 style={{
@@ -313,7 +361,7 @@ function GoalSelection() {
                   overflowY: 'auto'
                 }}
               >
-                {goalOptions.map((goal, index) => (
+                {filteredOptions.map((goal, index) => (
                   <div
                     key={index}
                     className="dropdown-option-card"
@@ -321,7 +369,7 @@ function GoalSelection() {
                     style={{
                       padding: '12px 16px',
                       cursor: 'pointer',
-                      borderBottom: index < goalOptions.length - 1 ? '1px solid #f1f3f4' : 'none',
+                      borderBottom: index < filteredOptions.length - 1 ? '1px solid #f1f3f4' : 'none',
                       transition: 'background-color 0.2s ease',
                       fontSize: '15px',
                       backgroundColor: 'white'
@@ -348,7 +396,11 @@ function GoalSelection() {
             </button>
             <button 
               type="button" 
-              onClick={() => setSelectedGoal('')}
+              onClick={() => {
+                setSelectedGoal('');
+                setInputValue('');
+                setFilteredOptions(goalOptions);
+              }}
               className="back-button"
             >
               Choose Different Goal
