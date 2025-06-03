@@ -27,6 +27,15 @@ const goalSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  imageMetadata: {
+    originalName: String,
+    mimeType: String,
+    size: Number,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  },
   category: {
     type: String,
     trim: true,
