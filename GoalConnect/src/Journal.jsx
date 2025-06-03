@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import './Journal.css'
 const Journal = () => {
   const [mood, setMood] = useState('');
   const [reflection, setReflection] = useState('');
@@ -16,17 +16,17 @@ const Journal = () => {
           <button 
             className={mood === 'positive' ? 'selected' : ''}
             onClick={() => setMood('positive')}
-          >😊 Positive</button>
+          >😊</button>
 
           <button 
             className={mood === 'neutral' ? 'selected' : ''}
             onClick={() => setMood('neutral')}
-          >😐 Neutral</button>
+          >😐</button>
 
           <button 
             className={mood === 'negative' ? 'selected' : ''}
             onClick={() => setMood('negative')}
-          >😞 Negative</button>
+          >😞</button>
         </div>
       </div>
 
