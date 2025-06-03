@@ -1,0 +1,36 @@
+.journal-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+.journal-container h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.mood-buttons button {
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.mood-buttons .selected {
+  background-color: #d0f0d0;
+  border: 2px solid #4caf50;
+}
+
+textarea, input[type="text"] {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
