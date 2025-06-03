@@ -21,6 +21,9 @@ function GoalSelection() {
   const [currentGoal, setCurrentGoal] = useState(null); // Store the saved goal
   const [isCompleted, setIsCompleted] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadStatus, setImageUploadStatus] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState(goalOptions); // New state for filtered options
 
@@ -201,36 +204,78 @@ function GoalSelection() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setImageUploadStatus('❌ Please select an image file');
+        return;
+      }
+      
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setImageUploadStatus('❌ Image must be less than 5MB');
+        return;
+      }
+
       setImageFile(file);
-      // For now, just store the file name as imageUrl
+      setImageUploadStatus(null);
+      
+      // Create preview
       const reader = new FileReader();
-      reader.onload = () => {
-        updateGoalImage(file.name);
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const updateGoalImage = async (imageUrl) => {
-    if (!currentGoal) return;
+  const submitImageUpload = async () => {
+    if (!imageFile || !currentGoal) return;
+
+    setIsUploadingImage(true);
+    setImageUploadStatus('Uploading image...');
 
     const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
     try {
-      const response = await fetch(`http://localhost:3001/api/goals/${currentGoal._id}`, {
-        method: 'PATCH',
+      const response = await fetch(`http://localhost:3001/api/goals/${currentGoal._id}/upload-image`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ imageUrl })
+        body: formData
       });
 
       if (response.ok) {
-        const updatedGoal = await response.json();
-        setCurrentGoal(updatedGoal);
+        const result = await response.json();
+        setCurrentGoal(result.goal);
+        setImageUploadStatus('✅ Image uploaded! Click to replace');
+        setImageFile(null);
+        setImagePreview(null);
+        // Clear the file input
+        const fileInput = document.getElementById('goal-image');
+        if (fileInput) fileInput.value = '';
+      } else {
+        const errorData = await response.json();
+        setImageUploadStatus(`❌ Upload failed: ${errorData.error}`);
       }
     } catch (error) {
-      console.error('Error updating goal image:', error);
+      console.error('Error uploading image:', error);
+      setImageUploadStatus('❌ Upload failed. Please try again.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleReplaceImage = () => {
+    setImageUploadStatus(null);
+    setImageFile(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById('goal-image');
+    if (fileInput) {
+      fileInput.value = '';
+      fileInput.click();
     }
   };
 
@@ -238,6 +283,9 @@ function GoalSelection() {
     setCurrentGoal(null);
     setIsCompleted(false);
     setImageFile(null);
+    setImagePreview(null);
+    setImageUploadStatus(null);
+    setIsUploadingImage(false);
     setStatus(null);
   };
 
@@ -292,22 +340,79 @@ function GoalSelection() {
                 Add Memory
               </h4>
               <div className="section-content">
-                <label htmlFor="goal-image" className="upload-button">
-                  📷 Upload Photo
-                </label>
-                <input
-                  id="goal-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden-file-input"
-                />
+                {!currentGoal.imageUrl && !imageFile && (
+                  <>
+                    <label htmlFor="goal-image" className="upload-button">
+                      📷 Choose Photo
+                    </label>
+                    <input
+                      id="goal-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden-file-input"
+                    />
+                  </>
+                )}
+
+                {imageFile && imagePreview && (
+                  <div className="image-upload-preview">
+                    <div className="preview-container">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="image-preview"
+                      />
+                      <div className="preview-actions">
+                        <button 
+                          onClick={submitImageUpload}
+                          disabled={isUploadingImage}
+                          className="submit-image-button"
+                        >
+                          {isUploadingImage ? '⏳ Uploading...' : '✅ Submit Image'}
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview(null);
+                            document.getElementById('goal-image').value = '';
+                          }}
+                          className="cancel-upload-button"
+                          disabled={isUploadingImage}
+                        >
+                          ❌ Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {currentGoal.imageUrl && (
-                  <div className="uploaded-image-info">
-                    <span className="image-icon">🖼️</span>
-                    <span className="image-name">
-                      {currentGoal.imageUrl}
-                    </span>
+                  <div className="uploaded-image-container">
+                    <div className="uploaded-image-display">
+                      <img 
+                        src={`http://localhost:3001/${currentGoal.imageUrl}`} 
+                        alt="Goal memory" 
+                        className="uploaded-image"
+                      />
+                    </div>
+                    <div className="image-status">
+                      <span className="success-message">
+                        ✅ Image uploaded! 
+                      </span>
+                      <button 
+                        onClick={handleReplaceImage}
+                        className="replace-image-button"
+                      >
+                        🔄 Click to replace
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {imageUploadStatus && (
+                  <div className={`upload-status ${imageUploadStatus.includes('❌') ? 'error' : imageUploadStatus.includes('✅') ? 'success' : 'info'}`}>
+                    {imageUploadStatus}
                   </div>
                 )}
               </div>
