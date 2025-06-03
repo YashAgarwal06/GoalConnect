@@ -4,6 +4,7 @@ import Login from './Login';
 import Register from './Register';
 import GoalSelection from './GoalSelection';
 import GoalHistory from './GoalHistory';
+import Journal from './Journal';
 import './App.css'
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
         return <GoalSelection />;
       case 'goalHistory':
         return <GoalHistory />;
+      case 'journal':
+        return <Journal />;
       default:
         return <Home onGetStarted={() => setView('login')} />;
     }
@@ -58,6 +61,9 @@ function App() {
             </li>
             <li className={view === 'goalHistory' ? 'active' : ''}>
               <button onClick={() => setView('goalHistory')}>Goal History</button>
+            </li>
+            <li className={view === 'journal' ? 'active' : ''}>
+              <button onClick={() => setView('journal')}>Journal</button>
             </li>
           </ul>
         </div>
