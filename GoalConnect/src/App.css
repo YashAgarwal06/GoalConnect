@@ -583,13 +583,32 @@ input::placeholder {
 .goal-history-container {
   max-width: 900px;
   width: 100%;
+  padding-top: 0px;
+  scroll-margin-top: 80px;
+  min-height: auto;
+  padding-bottom: 40px;
+}
+
+.goal-history-header {
+  position: sticky;
+  top: 80px;
+  background: white;
+  padding: 20px 0 10px 0;
+  margin: 0 0 30px 0;
+  z-index: 50;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.goal-history-container h1 {
+  margin: 0 0 20px 0;
+  padding: 0;
 }
 
 /* Tab navigation for history views */
 .history-tabs {
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 0;
   gap: 12px;
 }
 
@@ -615,7 +634,9 @@ input::placeholder {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 25px;
-  margin-top: 20px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-bottom: 20px;
 }
 
 .calendar-container {
@@ -623,6 +644,7 @@ input::placeholder {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  max-height: 450px;
 }
 
 .goal-calendar {
@@ -630,7 +652,7 @@ input::placeholder {
   border: none;
   border-radius: 8px;
   font-family: inherit;
-  height: 350px;
+  max-height: 350px;
 }
 
 .react-calendar__year-view__months__month {
@@ -690,11 +712,15 @@ input::placeholder {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  max-height: 450px;
+  overflow-y: auto;
 }
 
 .daily-goals {
   text-align: left;
   margin-top: 15px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .daily-goals h4 {
@@ -745,6 +771,27 @@ input::placeholder {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.goals-button-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.goals-button-list::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 3px;
+}
+
+.goals-button-list::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+.goals-button-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
 }
 
 .goal-button {
@@ -819,6 +866,7 @@ input::placeholder {
 /* Stats view */
 .stats-view {
   width: 100%;
+  padding-bottom: 40px;
 }
 
 /* Monthly performance chart */
@@ -876,6 +924,7 @@ input::placeholder {
 /* Milestones view */
 .milestones-view {
   width: 100%;
+  padding-bottom: 40px;
 }
 
 .milestone-subtitle {
@@ -957,6 +1006,44 @@ input::placeholder {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
+.goal-streak-container h2 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.streak-display {
+  text-align: center;
+}
+
+.streak-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.streak-count {
+  display: block;
+  font-size: 4rem;
+  font-weight: bold;
+  color: var(--accent);
+  margin-bottom: 5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.streak-text {
+  font-size: 1.2rem;
+  color: var(--text);
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--light), #f0f7ff);
+  border-radius: 12px;
+  border-left: 4px solid var(--accent);
+}
+
 .streaks {
   display: flex;
   justify-content: space-between;
@@ -970,14 +1057,6 @@ input::placeholder {
   background-color: var(--background);
   border-radius: 12px;
   margin: 0 10px;
-}
-
-.streak-count {
-  display: block;
-  font-size: 30px;
-  font-weight: bold;
-  color: var(--primary);
-  margin-bottom: 5px;
 }
 
 .streak-label {
@@ -996,6 +1075,10 @@ input::placeholder {
     grid-template-columns: 1fr;
   }
   
+  .goals-button-list {
+    max-height: 300px;
+  }
+  
   .streaks {
     flex-direction: column;
     gap: 15px;
@@ -1003,6 +1086,15 @@ input::placeholder {
   
   .streak-item {
     margin: 0;
+  }
+  
+  .streak-count {
+    font-size: 3rem;
+  }
+  
+  .streak-text {
+    font-size: 1rem;
+    padding: 15px;
   }
   
   .chart-container {
@@ -1766,4 +1858,12 @@ input::placeholder {
   .feature-card {
     padding: 30px 20px;
   }
+}
+
+/* Ensure all tab content starts at the same position */
+.calendar-view,
+.stats-view,
+.milestones-view {
+  margin-top: 0;
+  padding-top: 20px;
 }

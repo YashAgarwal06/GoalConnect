@@ -10,6 +10,7 @@ const GoalHistory = () => {
   const [error, setError] = useState(null);
   const [selectedGoalForDetails, setSelectedGoalForDetails] = useState(null);
   const [showGoalDetails, setShowGoalDetails] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState(0);
   const [statistics, setStatistics] = useState({
     totalGoals: 0,
     completedGoals: 0,
@@ -91,6 +92,60 @@ const GoalHistory = () => {
     }
   }, [selectedTimeMetric, activeTab]);
 
+  // Calculate current streak
+  useEffect(() => {
+    const calculateStreak = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        let streak = 0;
+        const today = new Date();
+        
+        // Check each day going backwards from today
+        for (let i = 0; i < 30; i++) { // Check last 30 days max
+          const checkDate = new Date(today);
+          checkDate.setDate(today.getDate() - i);
+          checkDate.setHours(0, 0, 0, 0);
+          const formattedDate = checkDate.toISOString().split('T')[0];
+          
+          const response = await fetch(`http://localhost:3001/api/goals/date/${formattedDate}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const goals = await response.json();
+            if (goals.length === 0) {
+              // No goals set for this day, skip
+              continue;
+            }
+            
+            // Check if all goals for this day are completed
+            const allCompleted = goals.every(goal => goal.isCompleted);
+            if (allCompleted) {
+              if (i === streak) { // Consecutive day
+                streak++;
+              } else {
+                break; // Streak broken
+              }
+            } else {
+              break; // Streak broken
+            }
+          } else {
+            break;
+          }
+        }
+        
+        setCurrentStreak(streak);
+      } catch (error) {
+        console.error('Failed to calculate streak:', error);
+      }
+    };
+
+    calculateStreak();
+  }, [dailyGoals, activeTab]); // Recalculate when goals change
+
   // Function to toggle goal completion
   const toggleGoalCompletion = async (goalId) => {
     try {
@@ -169,29 +224,31 @@ const GoalHistory = () => {
 
   return (
     <div className="goal-history-container">
-      <h1>Memories & Progress History</h1>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      <div className="history-tabs">
-        <button 
-          className={activeTab === 'calendar' ? 'active' : ''} 
-          onClick={() => setActiveTab('calendar')}
-        >
-          Calendar View
-        </button>
-        <button 
-          className={activeTab === 'stats' ? 'active' : ''} 
-          onClick={() => setActiveTab('stats')}
-        >
-          Statistics
-        </button>
-        <button 
-          className={activeTab === 'milestones' ? 'active' : ''} 
-          onClick={() => setActiveTab('milestones')}
-        >
-          Milestones
-        </button>
+      <div className="goal-history-header">
+        <h1>Memories & Progress History</h1>
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        <div className="history-tabs">
+          <button 
+            className={activeTab === 'calendar' ? 'active' : ''} 
+            onClick={() => setActiveTab('calendar')}
+          >
+            Calendar View
+          </button>
+          <button 
+            className={activeTab === 'stats' ? 'active' : ''} 
+            onClick={() => setActiveTab('stats')}
+          >
+            Statistics
+          </button>
+          <button 
+            className={activeTab === 'milestones' ? 'active' : ''} 
+            onClick={() => setActiveTab('milestones')}
+          >
+            Milestones
+          </button>
+        </div>
       </div>
       
       {activeTab === 'calendar' && (
@@ -359,6 +416,33 @@ const GoalHistory = () => {
               </div>
             </div>
             
+          </div>
+        </div>
+      )}
+
+      {/* Streak Display - Only show on Calendar tab */}
+      {activeTab === 'calendar' && (
+        <div className="goal-streak-container">
+          <h2>🔥 Current Streak</h2>
+          <div className="streak-display">
+            {currentStreak > 0 ? (
+              <div className="streak-message">
+                <div className="streak-count">{currentStreak}</div>
+                <div className="streak-text">
+                  {currentStreak === 1 
+                    ? "You have a streak of 1 day where you completed all your goals! Keep it up!" 
+                    : `You have a streak of ${currentStreak} days where you have completed all your goals! Amazing consistency! 🎉`
+                  }
+                </div>
+              </div>
+            ) : (
+              <div className="streak-message">
+                <div className="streak-count">0</div>
+                <div className="streak-text">
+                  Start your streak today by completing all your goals! Every journey begins with a single step. 💪
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
