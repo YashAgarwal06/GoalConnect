@@ -179,7 +179,7 @@ const Journal = () => {
 
       <div className="journal-form">
         <div className="mood-section">
-          <label>How do you feel after working on your goal?</label>
+          <label>How do you feel after working on your goal(s)?</label>
           <div className="mood-buttons">
             <button 
               className={mood === 'positive' ? 'selected' : ''} 

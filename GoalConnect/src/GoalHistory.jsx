@@ -43,11 +43,12 @@ const GoalHistory = () => {
           const uniqueGoals = data.filter((goal, index, self) => 
             index === self.findIndex(g => g.description === goal.description)
           );
-          setDailyGoals(uniqueGoals.map(goal => ({
+          const sortedGoals = uniqueGoals.sort((a,b)=>(a.priorityRank ?? 0)-(b.priorityRank ?? 0));
+          setDailyGoals(sortedGoals.map(goal => ({
             id: goal._id,
             title: goal.description,
             completed: goal.isCompleted,
-            fullGoalData: goal // Store the complete goal object
+            fullGoalData: goal
           })));
           setError(null);
         } else {

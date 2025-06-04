@@ -46,6 +46,10 @@ const goalSchema = new mongoose.Schema({
     type: String,
     enum: ['low', 'medium', 'high'],
     default: 'medium'
+  },
+  priorityRank: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

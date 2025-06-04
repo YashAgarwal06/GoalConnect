@@ -26,10 +26,12 @@ function GoalSelection() {
   const [imageUploadStatus, setImageUploadStatus] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState(goalOptions); // New state for filtered options
+  const [todayGoals, setTodayGoals] = useState([]);
+  const [dragIndex, setDragIndex] = useState(null);
 
   // Check if user already has a goal for today
   useEffect(() => {
-    const fetchTodayGoal = async () => {
+    const fetchTodayGoals = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
@@ -44,17 +46,14 @@ function GoalSelection() {
 
         if (response.ok) {
           const goals = await response.json();
-          if (goals.length > 0) {
-            setCurrentGoal(goals[0]);
-            setIsCompleted(goals[0].isCompleted);
-          }
+          setTodayGoals(goals.sort((a,b)=>(a.priorityRank??0)-(b.priorityRank??0)));
         }
       } catch (error) {
-        console.error('Error fetching today\'s goal:', error);
+        console.error('Error fetching today\'s goals:', error);
       }
     };
 
-    fetchTodayGoal();
+    fetchTodayGoals();
   }, []);
 
   const handleGoalSelect = (goal) => {
@@ -149,7 +148,8 @@ function GoalSelection() {
         description: selectedGoal,
         date: today,
         category: 'personal',
-        priority: 'medium'
+        priority: 'medium',
+        priorityRank: todayGoals.length
       };
 
       const res = await fetch('http://localhost:3001/api/goals', {
@@ -167,8 +167,7 @@ function GoalSelection() {
       }
 
       const data = await res.json();
-      setCurrentGoal(data);
-      setIsCompleted(data.isCompleted);
+      setTodayGoals(prev => [...prev, {...data, priorityRank: prev.length}]);
       setStatus(`✅ Goal submitted successfully!`);
       setSelectedGoal('');
     } catch (err) {
@@ -193,6 +192,7 @@ function GoalSelection() {
 
       if (response.ok) {
         const updatedGoal = await response.json();
+        setTodayGoals(prev => prev.map(g => g._id === updatedGoal._id ? updatedGoal : g));
         setCurrentGoal(updatedGoal);
         setIsCompleted(updatedGoal.isCompleted);
       }
@@ -249,7 +249,9 @@ function GoalSelection() {
 
       if (response.ok) {
         const result = await response.json();
+        setTodayGoals(prev => prev.map(g => g._id === result.goal._id ? result.goal : g));
         setCurrentGoal(result.goal);
+        setIsCompleted(result.goal.isCompleted);
         setImageUploadStatus('✅ Image uploaded! Click to replace');
         setImageFile(null);
         setImagePreview(null);
@@ -289,30 +291,377 @@ function GoalSelection() {
     setStatus(null);
   };
 
+  const openGoalDetails = (goal) => {
+    setCurrentGoal(goal);
+    setIsCompleted(goal.isCompleted);
+    setImageFile(null);
+    setImagePreview(null);
+    setImageUploadStatus(null);
+  };
+
+  const closeGoalDetails = () => {
+    setCurrentGoal(null);
+    setImageFile(null);
+    setImagePreview(null);
+    setImageUploadStatus(null);
+  };
+
+  const deleteGoal = async (goalId, e) => {
+    // stop click bubbling so modal doesn't open
+    if (e) e.stopPropagation();
+    const confirmDelete = window.confirm('Remove this goal?');
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:3001/api/goals/${goalId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setTodayGoals(prev => prev.filter(g => g._id !== goalId));
+        if (currentGoal && currentGoal._id === goalId) {
+          closeGoalDetails();
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting goal:', err);
+    }
+  };
+
+  // Insert helper to update priority rank on server
+  const updateGoalPriority = async (goalId, newRank) => {
+    const token = localStorage.getItem('token');
+    try {
+      await fetch(`http://localhost:3001/api/goals/${goalId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ priorityRank: newRank })
+      });
+    } catch (err) {
+      console.error('Error updating goal priority:', err);
+    }
+  };
+
+  const handleDragStart = (index, e) => {
+    setDragIndex(index);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (index, e) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    const reordered = [...todayGoals];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(index, 0, moved);
+    reordered.forEach((g, i) => { g.priorityRank = i; });
+    setTodayGoals(reordered);
+    reordered.forEach(g => updateGoalPriority(g._id, g.priorityRank));
+    setDragIndex(null);
+  };
+
   // If user already has a goal for today, show the goal management view
   if (currentGoal) {
     return (
-      <div className="goal-selection-container">
-        <h2 className="goal-management-title">
-          Your Goal for Today
-        </h2>
-        
-        <div className="current-goal-view">
-          {/* Goal Display Card */}
-          <div className="goal-display-card">
-            <div className="goal-header">
-              <span className="goal-icon">🎯</span>
-              <h3 className="goal-title">
-                {currentGoal.description}
-              </h3>
+      <div className="goal-selection-container two-column">
+        {/* Left – add/select goal */}
+        <div className="goal-selection-left">
+          <h2>Select / Add Goal for Today</h2>
+
+          {!selectedGoal ? (
+            <div className="goal-selection-form" style={{ position: 'relative' }}>
+              <div className="custom-dropdown">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  placeholder="🎯 Type your goal or choose from suggestions..."
+                  className={`goal-input ${isDropdownOpen ? 'dropdown-open' : ''}`}
+                />
+                <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
+
+                {isDropdownOpen && filteredOptions.length > 0 && (
+                  <div className="dropdown-options">
+                    {filteredOptions.map((goal, index) => (
+                      <div
+                        key={index}
+                        className="dropdown-option-card"
+                        onClick={() => handleGoalSelect(goal)}
+                      >
+                        {goal}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="goal-confirmation">
+              <div className="selected-goal-preview">
+                <h3>Selected Goal:</h3>
+                <p>{selectedGoal}</p>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="submit-button">Confirm Goal</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedGoal('');
+                    setInputValue('');
+                    setFilteredOptions(goalOptions);
+                  }}
+                  className="back-button"
+                >
+                  Choose Different Goal
+                </button>
+              </div>
+            </form>
+          )}
+
+          {status && <p className="status-message">{status}</p>}
+        </div>
+
+        {/* Right – today's goals list */}
+        <div className="goal-selection-right">
+          <h2>Today's Goals</h2>
+          {todayGoals.length > 0 ? (
+            <ul className="today-goals-list">
+              {todayGoals.map((goal, index) => (
+                <li
+                  key={goal._id}
+                  className={`goal-list-item ${goal.isCompleted ? 'completed' : ''}`}
+                  draggable
+                  onDragStart={(e)=>handleDragStart(index, e)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e)=>handleDrop(index, e)}
+                  onClick={() => openGoalDetails(goal)}
+                >
+                  <span className="goal-number">{index+1}.</span>
+                  <span className="drag-handle" title="Drag to reorder" onMouseDown={(e)=>e.stopPropagation()}>☰</span>
+                  <span className="goal-desc">{goal.description}</span>
+                  <div className="goal-icons" onClick={(e)=>e.stopPropagation()}>
+                    {goal.isCompleted && <span className="goal-complete-icon" title="Completed">✓</span>}
+                    {goal.imageUrl && <span className="goal-image-icon uploaded" title="Memory added"></span>}
+                    <span className="goal-delete-icon" title="Remove goal" onClick={(e)=>deleteGoal(goal._id,e)}>🗑️</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No goals yet. Add one on the left!</p>
+          )}
+        </div>
+
+        {/* Modal for selected goal */}
+        {currentGoal && (
+          <div className="goal-details-modal">
+            <div className="modal-overlay" onClick={closeGoalDetails}></div>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>🎯 {currentGoal.description}</h3>
+                <button className="close-modal-btn" onClick={closeGoalDetails}>✕</button>
+              </div>
+
+              {/* Progress Section */}
+              <div className="goal-section">
+                <h4 className="section-title"><span className="section-icon">📊</span> Progress</h4>
+                <div className="section-content">
+                  <label className="completion-toggle">
+                    <input
+                      type="checkbox"
+                      checked={isCompleted}
+                      onChange={toggleCompletion}
+                      className="completion-checkbox"
+                    />
+                    <span className="completion-label">Mark as {isCompleted ? 'Incomplete' : 'Complete'}</span>
+                  </label>
+                  {isCompleted && <div className="completion-status">✅ Goal Completed! Great job!</div>}
+                </div>
+              </div>
+
+              {/* Memory Section */}
+              <div className="goal-section">
+                <h4 className="section-title">Add Memory</h4>
+                <div className="section-content">
+                  {!currentGoal.imageUrl && !imageFile && (
+                    <>
+                      <label htmlFor="goal-image" className="upload-button">Choose Photo</label>
+                      <input
+                        id="goal-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden-file-input"
+                      />
+                    </>
+                  )}
+
+                  {imageFile && imagePreview && (
+                    <div className="image-upload-preview">
+                      <div className="preview-container">
+                        <img src={imagePreview} alt="Preview" className="image-preview" />
+                        <div className="preview-actions">
+                          <button onClick={submitImageUpload} disabled={isUploadingImage} className="submit-image-button">
+                            {isUploadingImage ? '⏳ Uploading...' : '✅ Submit Image'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setImageFile(null);
+                              setImagePreview(null);
+                              document.getElementById('goal-image').value = '';
+                            }}
+                            className="cancel-upload-button"
+                            disabled={isUploadingImage}
+                          >
+                            ❌ Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentGoal.imageUrl && (
+                    <div className="uploaded-image-container">
+                      <div className="uploaded-image-display">
+                        <img src={`http://localhost:3001/${currentGoal.imageUrl}`} alt="Goal memory" className="uploaded-image" />
+                      </div>
+                      <div className="image-status">
+                        <span className="success-message">✅ Image uploaded!</span>
+                        <button onClick={handleReplaceImage} className="replace-image-button">🔄 Click to replace</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {imageUploadStatus && (
+                    <div className={`upload-status ${imageUploadStatus.includes('❌') ? 'error' : imageUploadStatus.includes('✅') ? 'success' : 'info'}`}>{imageUploadStatus}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="goal-selection-container two-column">
+      {/* Left – add/select goal */}
+      <div className="goal-selection-left">
+        <h2>Select / Add Goal for Today</h2>
+
+        {!selectedGoal ? (
+          <div className="goal-selection-form" style={{ position: 'relative' }}>
+            <div className="custom-dropdown">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                placeholder="🎯 Type your goal or choose from suggestions..."
+                className={`goal-input ${isDropdownOpen ? 'dropdown-open' : ''}`}
+              />
+              <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
+
+              {isDropdownOpen && filteredOptions.length > 0 && (
+                <div className="dropdown-options">
+                  {filteredOptions.map((goal, index) => (
+                    <div
+                      key={index}
+                      className="dropdown-option-card"
+                      onClick={() => handleGoalSelect(goal)}
+                    >
+                      {goal}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="goal-confirmation">
+            <div className="selected-goal-preview">
+              <h3>Selected Goal:</h3>
+              <p>{selectedGoal}</p>
+            </div>
+            <div className="form-actions">
+              <button type="submit" className="submit-button">Confirm Goal</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedGoal('');
+                  setInputValue('');
+                  setFilteredOptions(goalOptions);
+                }}
+                className="back-button"
+              >
+                Choose Different Goal
+              </button>
+            </div>
+          </form>
+        )}
+
+        {status && <p className="status-message">{status}</p>}
+      </div>
+
+      {/* Right – today's goals list */}
+      <div className="goal-selection-right">
+        <h2>Today's Goals</h2>
+        {todayGoals.length > 0 ? (
+          <ul className="today-goals-list">
+            {todayGoals.map((goal, index) => (
+              <li
+                key={goal._id}
+                className={`goal-list-item ${goal.isCompleted ? 'completed' : ''}`}
+                draggable
+                onDragStart={(e)=>handleDragStart(index, e)}
+                onDragOver={handleDragOver}
+                onDrop={(e)=>handleDrop(index, e)}
+                onClick={() => openGoalDetails(goal)}
+              >
+                <span className="goal-number">{index+1}.</span>
+                <span className="drag-handle" title="Drag to reorder" onMouseDown={(e)=>e.stopPropagation()}>☰</span>
+                <span className="goal-desc">{goal.description}</span>
+                <div className="goal-icons" onClick={(e)=>e.stopPropagation()}>
+                  {goal.isCompleted && <span className="goal-complete-icon" title="Completed">✓</span>}
+                  {goal.imageUrl && <span className="goal-image-icon uploaded" title="Memory added"></span>}
+                  <span className="goal-delete-icon" title="Remove goal" onClick={(e)=>deleteGoal(goal._id,e)}>🗑️</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No goals yet. Add one on the left!</p>
+        )}
+      </div>
+
+      {/* Modal for selected goal */}
+      {currentGoal && (
+        <div className="goal-details-modal">
+          <div className="modal-overlay" onClick={closeGoalDetails}></div>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>🎯 {currentGoal.description}</h3>
+              <button className="close-modal-btn" onClick={closeGoalDetails}>✕</button>
             </div>
 
             {/* Progress Section */}
             <div className="goal-section">
-              <h4 className="section-title">
-                <span className="section-icon">📊</span>
-                Progress
-              </h4>
+              <h4 className="section-title"><span className="section-icon">📊</span> Progress</h4>
               <div className="section-content">
                 <label className="completion-toggle">
                   <input
@@ -321,30 +670,19 @@ function GoalSelection() {
                     onChange={toggleCompletion}
                     className="completion-checkbox"
                   />
-                  <span className="completion-label">
-                    Mark as {isCompleted ? 'Incomplete' : 'Complete'}
-                  </span>
+                  <span className="completion-label">Mark as {isCompleted ? 'Incomplete' : 'Complete'}</span>
                 </label>
-                {isCompleted && (
-                  <div className="completion-status">
-                    ✅ Goal Completed! Great job!
-                  </div>
-                )}
+                {isCompleted && <div className="completion-status">✅ Goal Completed! Great job!</div>}
               </div>
             </div>
 
-            {/* Memory/Image Section */}
+            {/* Memory Section */}
             <div className="goal-section">
-              <h4 className="section-title">
-                <span className="section-icon">📷</span>
-                Add Memory
-              </h4>
+              <h4 className="section-title">Add Memory</h4>
               <div className="section-content">
                 {!currentGoal.imageUrl && !imageFile && (
                   <>
-                    <label htmlFor="goal-image" className="upload-button">
-                      📷 Choose Photo
-                    </label>
+                    <label htmlFor="goal-image" className="upload-button">Choose Photo</label>
                     <input
                       id="goal-image"
                       type="file"
@@ -358,20 +696,12 @@ function GoalSelection() {
                 {imageFile && imagePreview && (
                   <div className="image-upload-preview">
                     <div className="preview-container">
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="image-preview"
-                      />
+                      <img src={imagePreview} alt="Preview" className="image-preview" />
                       <div className="preview-actions">
-                        <button 
-                          onClick={submitImageUpload}
-                          disabled={isUploadingImage}
-                          className="submit-image-button"
-                        >
+                        <button onClick={submitImageUpload} disabled={isUploadingImage} className="submit-image-button">
                           {isUploadingImage ? '⏳ Uploading...' : '✅ Submit Image'}
                         </button>
-                        <button 
+                        <button
                           onClick={() => {
                             setImageFile(null);
                             setImagePreview(null);
@@ -390,108 +720,23 @@ function GoalSelection() {
                 {currentGoal.imageUrl && (
                   <div className="uploaded-image-container">
                     <div className="uploaded-image-display">
-                      <img 
-                        src={`http://localhost:3001/${currentGoal.imageUrl}`} 
-                        alt="Goal memory" 
-                        className="uploaded-image"
-                      />
+                      <img src={`http://localhost:3001/${currentGoal.imageUrl}`} alt="Goal memory" className="uploaded-image" />
                     </div>
                     <div className="image-status">
-                      <span className="success-message">
-                        ✅ Image uploaded! 
-                      </span>
-                      <button 
-                        onClick={handleReplaceImage}
-                        className="replace-image-button"
-                      >
-                        🔄 Click to replace
-                      </button>
+                      <span className="success-message">✅ Image uploaded!</span>
+                      <button onClick={handleReplaceImage} className="replace-image-button">🔄 Click to replace</button>
                     </div>
                   </div>
                 )}
 
                 {imageUploadStatus && (
-                  <div className={`upload-status ${imageUploadStatus.includes('❌') ? 'error' : imageUploadStatus.includes('✅') ? 'success' : 'info'}`}>
-                    {imageUploadStatus}
-                  </div>
+                  <div className={`upload-status ${imageUploadStatus.includes('❌') ? 'error' : imageUploadStatus.includes('✅') ? 'success' : 'info'}`}>{imageUploadStatus}</div>
                 )}
               </div>
             </div>
           </div>
-          
-          {/* Action Button */}
-          <div className="action-buttons-container">
-            <button onClick={resetSelection} className="reset-button">
-              Choose Different Goal
-            </button>
-          </div>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="goal-selection-container">
-      <h2>Select Your Goal for Today</h2>
-      
-      {!selectedGoal ? (
-        <div className="goal-selection-form" style={{ position: 'relative' }}>
-          <div className="custom-dropdown">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              placeholder="🎯 Type your goal or choose from suggestions..."
-              className={`goal-input ${isDropdownOpen ? 'dropdown-open' : ''}`}
-            />
-            <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>
-              ▼
-            </span>
-            
-            {isDropdownOpen && filteredOptions.length > 0 && (
-              <div className="dropdown-options">
-                {filteredOptions.map((goal, index) => (
-                  <div
-                    key={index}
-                    className="dropdown-option-card"
-                    onClick={() => handleGoalSelect(goal)}
-                  >
-                    {goal}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="goal-confirmation">
-          <div className="selected-goal-preview">
-            <h3>Selected Goal:</h3>
-            <p>{selectedGoal}</p>
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="submit-button">
-              Confirm Goal
-            </button>
-            <button 
-              type="button" 
-              onClick={() => {
-                setSelectedGoal('');
-                setInputValue('');
-                setFilteredOptions(goalOptions);
-              }}
-              className="back-button"
-            >
-              Choose Different Goal
-            </button>
-          </div>
-        </form>
       )}
-      
-      {status && <p className="status-message">{status}</p>}
     </div>
   );
 }
