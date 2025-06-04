@@ -195,8 +195,24 @@ router.get('/stats/:period', auth, async (req, res) => {
       case 'year':
         daysBack = 365;
         break;
+      case 'all':
+        // Return all-time statistics for milestones
+        const allGoals = await Goal.find({
+          user: req.user._id
+        });
+        
+        const totalGoals = allGoals.length;
+        const completedGoals = allGoals.filter(goal => goal.isCompleted).length;
+        const completionRate = totalGoals === 0 ? 0 : Math.round((completedGoals / totalGoals) * 100);
+        
+        return res.json({
+          totalGoals,
+          completedGoals,
+          notCompletedGoals: totalGoals - completedGoals,
+          completionRate
+        });
       default:
-        return res.status(400).json({ error: 'Invalid period. Use 7days, month, or year' });
+        return res.status(400).json({ error: 'Invalid period. Use 7days, month, year, or all' });
     }
     
     const endDate = new Date();

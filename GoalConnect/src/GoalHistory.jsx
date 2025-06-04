@@ -20,6 +20,12 @@ const GoalHistory = () => {
     notCompletedGoals: 0,
     completionRate: 0
   });
+  const [milestones, setMilestones] = useState({
+    totalCompletedGoals: 0,
+    longestStreak: 0,
+    weeklyStreaks: 0,
+    monthlyGoals: 0
+  });
   
   // Fetch daily goals for selected date
   useEffect(() => {
@@ -150,6 +156,83 @@ const GoalHistory = () => {
     calculateStreak();
   }, [dailyGoals, activeTab]); // Recalculate when goals change
 
+  // Calculate milestones data
+  useEffect(() => {
+    const fetchMilestones = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          setError('Please log in to view milestones');
+          return;
+        }
+        
+        // Try the new stats/all endpoint first
+        let response = await fetch('http://localhost:3001/api/goals/stats/all', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        let data;
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          // Fallback: get all goals and calculate manually
+          response = await fetch('http://localhost:3001/api/goals', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const allGoals = await response.json();
+            
+            // Calculate stats manually
+            const totalGoals = allGoals.length;
+            const completedGoals = allGoals.filter(goal => goal.isCompleted).length;
+            const completionRate = totalGoals === 0 ? 0 : Math.round((completedGoals / totalGoals) * 100);
+            
+            data = {
+              totalGoals,
+              completedGoals,
+              notCompletedGoals: totalGoals - completedGoals,
+              completionRate
+            };
+          } else {
+            const errorData = await response.json();
+            setError(`Failed to fetch goal data: ${errorData.error || 'Unknown error'}`);
+            return;
+          }
+        }
+        
+        if (data) {
+          // Calculate longest streak - simplified for now
+          let longestStreak = currentStreak; // Start with current streak as minimum
+          
+          const newMilestones = {
+            totalCompletedGoals: data.completedGoals || 0,
+            longestStreak: longestStreak,
+            weeklyStreaks: Math.floor((data.completedGoals || 0) / 7),
+            monthlyGoals: data.completedGoals || 0
+          };
+          
+          setMilestones(newMilestones);
+          setError(null); // Clear any previous errors
+        }
+      } catch (error) {
+        setError(`Failed to connect to server: ${error.message}`);
+      }
+    };
+
+    // Only fetch milestones when we're on the milestones tab
+    if (activeTab === 'milestones') {
+      fetchMilestones();
+    }
+  }, [activeTab, currentStreak]);
+
   // Function to toggle goal completion
   const toggleGoalCompletion = async (goalId) => {
     try {
@@ -276,6 +359,141 @@ const GoalHistory = () => {
     return moodMap[mood] || '😐';
   };
 
+  // Milestone achievement checker
+  const getMilestoneAchievements = () => {
+    const achievements = [];
+    const { totalCompletedGoals, longestStreak } = milestones;
+
+    // Goal completion milestones
+    if (totalCompletedGoals >= 100) {
+      achievements.push({
+        id: 'goals_100',
+        title: 'Goal Crushing Legend!',
+        message: '100 GOALS COMPLETED! You\'ve officially entered legendary status! Your consistency and determination are inspiring. You\'re not just achieving goals - you\'re mastering the art of personal growth!',
+        icon: '👑',
+        level: 'legendary',
+        achieved: true,
+        progress: totalCompletedGoals,
+        target: 100
+      });
+    } else if (totalCompletedGoals >= 50) {
+      achievements.push({
+        id: 'goals_50',
+        title: 'Momentum Master!',
+        message: 'Wow! 50 goals completed! You\'re not just setting goals, you\'re crushing them! Your dedication is turning dreams into achievements. Keep this incredible momentum going!',
+        icon: '🚀',
+        level: 'master',
+        achieved: true,
+        progress: totalCompletedGoals,
+        target: 50
+      });
+    } else if (totalCompletedGoals >= 10) {
+      achievements.push({
+        id: 'goals_10',
+        title: 'First Steps Champion!',
+        message: 'You\'ve completed 10 goals! You\'re proving that small consistent actions lead to big changes. The journey of a thousand miles begins with a single step - and you\'ve taken 10!',
+        icon: '🎉',
+        level: 'champion',
+        achieved: true,
+        progress: totalCompletedGoals,
+        target: 10
+      });
+    }
+
+    // Add next milestone if not at max
+    if (totalCompletedGoals < 10) {
+      achievements.push({
+        id: 'goals_10_next',
+        title: 'First Steps Champion',
+        message: 'Complete 10 goals to earn your first milestone! Every expert was once a beginner.',
+        icon: '🎯',
+        level: 'upcoming',
+        achieved: false,
+        progress: totalCompletedGoals,
+        target: 10
+      });
+    } else if (totalCompletedGoals < 50) {
+      achievements.push({
+        id: 'goals_50_next',
+        title: 'Momentum Master',
+        message: 'You\'re on your way to becoming a Momentum Master! Only ' + (50 - totalCompletedGoals) + ' more goals to go!',
+        icon: '🚀',
+        level: 'upcoming',
+        achieved: false,
+        progress: totalCompletedGoals,
+        target: 50
+      });
+    } else if (totalCompletedGoals < 100) {
+      achievements.push({
+        id: 'goals_100_next',
+        title: 'Goal Crushing Legend',
+        message: 'You\'re approaching legendary status! Only ' + (100 - totalCompletedGoals) + ' more goals until you become a Goal Crushing Legend!',
+        icon: '👑',
+        level: 'upcoming',
+        achieved: false,
+        progress: totalCompletedGoals,
+        target: 100
+      });
+    }
+
+    // Streak milestones
+    if (longestStreak >= 30) {
+      achievements.push({
+        id: 'streak_30',
+        title: 'Monthly Master!',
+        message: `30+ days of goal completion! You've built a habit that can last a lifetime. Your longest streak is ${longestStreak} days!`,
+        icon: '🏆',
+        level: 'master',
+        achieved: true,
+        progress: longestStreak,
+        target: 30
+      });
+    } else if (longestStreak >= 7) {
+      achievements.push({
+        id: 'streak_7',
+        title: 'Week Warrior!',
+        message: `A full week+ of completed goals! Your longest streak is ${longestStreak} days. You've proven you can maintain consistency!`,
+        icon: '⚡',
+        level: 'warrior',
+        achieved: true,
+        progress: longestStreak,
+        target: 7
+      });
+    } else if (longestStreak >= 3) {
+      achievements.push({
+        id: 'streak_3',
+        title: 'Consistency Starter!',
+        message: `You've got a ${longestStreak}-day streak! Small flames become roaring fires. Keep feeding this beautiful habit!`,
+        icon: '🔥',
+        level: 'starter',
+        achieved: true,
+        progress: longestStreak,
+        target: 3
+      });
+    }
+
+    // Current streak achievement
+    if (currentStreak > 0) {
+      achievements.push({
+        id: 'current_streak',
+        title: 'Current Streak Champion!',
+        message: `You're currently on a ${currentStreak}-day streak! Every day you maintain your streak, you're building mental muscles that make the next day easier!`,
+        icon: '💪',
+        level: 'current',
+        achieved: true,
+        progress: currentStreak,
+        target: currentStreak
+      });
+    }
+
+    return achievements.sort((a, b) => {
+      // Sort by achieved first, then by level priority
+      if (a.achieved !== b.achieved) return b.achieved - a.achieved;
+      const levelOrder = { legendary: 4, master: 3, champion: 2, warrior: 2, starter: 1, current: 0, upcoming: -1 };
+      return (levelOrder[b.level] || 0) - (levelOrder[a.level] || 0);
+    });
+  };
+
   return (
     <div className="goal-history-container">
       <div className="goal-history-header">
@@ -307,31 +525,6 @@ const GoalHistory = () => {
       
       {activeTab === 'calendar' && (
         <div className="calendar-tab-content">
-          {/* Streak Display - Moved above calendar */}
-          <div className="goal-streak-container">
-            <h2>🔥 Current Streak</h2>
-            <div className="streak-display">
-              {currentStreak > 0 ? (
-                <div className="streak-message">
-                  <div className="streak-count">{currentStreak}</div>
-                  <div className="streak-text">
-                    {currentStreak === 1 
-                      ? "You have a streak of 1 day where you completed all your goals! Keep it up!" 
-                      : `You have a streak of ${currentStreak} days where you have completed all your goals! Amazing consistency! 🎉`
-                    }
-                  </div>
-                </div>
-              ) : (
-                <div className="streak-message">
-                  <div className="streak-count">0</div>
-                  <div className="streak-text">
-                    Start your streak today by completing all your goals! Every journey begins with a single step. 💪
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
           <div className="calendar-view">
             <div className="calendar-container">
               <Calendar
@@ -597,6 +790,73 @@ const GoalHistory = () => {
             </div>
             
           </div>
+        </div>
+      )}
+
+      {activeTab === 'milestones' && (
+        <div className="milestones-view">
+          <h2>🏆 Your Achievements</h2>
+          <p className="milestone-subtitle">Celebrate your journey and see how far you've come!</p>
+          
+          <div className="milestone-summary">
+            <div className="milestone-stat">
+              <div className="stat-number">{milestones.totalCompletedGoals}</div>
+              <div className="stat-label">Goals Completed</div>
+            </div>
+            <div className="milestone-stat">
+              <div className="stat-number">{milestones.longestStreak}</div>
+              <div className="stat-label">Longest Streak</div>
+            </div>
+            <div className="milestone-stat">
+              <div className="stat-number">{currentStreak}</div>
+              <div className="stat-label">Current Streak</div>
+            </div>
+          </div>
+
+          <div className="milestone-grid">
+            {getMilestoneAchievements().map((achievement) => (
+              <div 
+                key={achievement.id}
+                className={`milestone-card ${achievement.achieved ? 'achieved' : 'upcoming'} ${achievement.level}`}
+              >
+                <div className="milestone-header">
+                  <div className="milestone-icon">{achievement.icon}</div>
+                  <div className="milestone-level">{achievement.level}</div>
+                </div>
+                
+                <h3 className="milestone-title">{achievement.title}</h3>
+                <p className="milestone-message">{achievement.message}</p>
+                
+                {!achievement.achieved && (
+                  <div className="milestone-progress">
+                    <div className="progress-text">
+                      {achievement.progress} / {achievement.target}
+                    </div>
+                    <div className="progress-bar-milestone">
+                      <div 
+                        className="progress-fill-milestone" 
+                        style={{ width: `${Math.min((achievement.progress / achievement.target) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                
+                {achievement.achieved && (
+                  <div className="achievement-badge">
+                    <span className="badge-text">✅ ACHIEVED!</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {getMilestoneAchievements().filter(a => a.achieved).length === 0 && (
+            <div className="no-milestones">
+              <div className="no-milestones-icon">🌟</div>
+              <h3>Start Your Journey!</h3>
+              <p>Complete your first goal to unlock your first achievement. Every great journey begins with a single step!</p>
+            </div>
+          )}
         </div>
       )}
     </div>
