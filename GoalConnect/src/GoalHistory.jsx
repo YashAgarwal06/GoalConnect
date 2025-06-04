@@ -484,7 +484,7 @@ const GoalHistory = () => {
                             </div>
 
                             <div className="journal-content">
-                              <h5>Daily Progress:</h5>
+                              <h5>Reflection for Today:</h5>
                               <p className="journal-text">{journalEntry.content}</p>
                             </div>
 
@@ -500,17 +500,6 @@ const GoalHistory = () => {
                                 <h5>Gratitude:</h5>
                                 <ul>
                                   {journalEntry.gratitude.map((item, index) => (
-                                    <li key={index}>{item}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {journalEntry.accomplishments && journalEntry.accomplishments.length > 0 && (
-                              <div className="journal-accomplishments">
-                                <h5>Accomplishments:</h5>
-                                <ul>
-                                  {journalEntry.accomplishments.map((item, index) => (
                                     <li key={index}>{item}</li>
                                   ))}
                                 </ul>

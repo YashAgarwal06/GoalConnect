@@ -8,7 +8,6 @@ const Journal = () => {
   const [title, setTitle] = useState('');
   const [gratitude, setGratitude] = useState(['']);
   const [challenges, setChallenges] = useState(['']);
-  const [accomplishments, setAccomplishments] = useState(['']);
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,14 +31,14 @@ const Journal = () => {
         if (response.ok) {
           const entry = await response.json();
           if (entry) {
-            // Map backend field names to frontend state
-            setMood(entry.mood || 'neutral');
+            // Map backend mood to frontend mood
+            const frontendMood = mapMoodFromBackend(entry.mood);
+            setMood(frontendMood);
             setReflection(entry.content || '');
             setImprovement(entry.reflection || '');
             setTitle(entry.title || '');
             setGratitude(entry.gratitude && entry.gratitude.length > 0 ? entry.gratitude : ['']);
             setChallenges(entry.challenges && entry.challenges.length > 0 ? entry.challenges : ['']);
-            setAccomplishments(entry.accomplishments && entry.accomplishments.length > 0 ? entry.accomplishments : ['']);
             setExistingEntryId(entry._id);
           }
         }
@@ -106,10 +105,11 @@ const Journal = () => {
       const today = new Date().toISOString().split('T')[0];
       const token = localStorage.getItem('token');
       
+      console.log('Saving journal entry...', { existingEntryId, today });
+      
       // Filter out empty strings from arrays
       const filteredGratitude = gratitude.filter(item => item.trim() !== '');
       const filteredChallenges = challenges.filter(item => item.trim() !== '');
-      const filteredAccomplishments = accomplishments.filter(item => item.trim() !== '');
 
       const journalEntry = {
         date: today,
@@ -118,14 +118,16 @@ const Journal = () => {
         mood: mapMoodToBackend(mood),
         reflection: improvement.trim(),
         gratitude: filteredGratitude,
-        challenges: filteredChallenges,
-        accomplishments: filteredAccomplishments
+        challenges: filteredChallenges
       };
+
+      console.log('Journal entry data:', journalEntry);
 
       let response;
       
       if (existingEntryId) {
         // Update existing entry
+        console.log('Updating existing entry:', existingEntryId);
         response = await fetch(`http://localhost:3001/api/journal/${existingEntryId}`, {
           method: 'PATCH',
           headers: {
@@ -136,6 +138,7 @@ const Journal = () => {
         });
       } else {
         // Create new entry
+        console.log('Creating new entry');
         response = await fetch('http://localhost:3001/api/journal', {
           method: 'POST',
           headers: {
@@ -146,13 +149,17 @@ const Journal = () => {
         });
       }
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
         const savedEntry = await response.json();
+        console.log('Entry saved successfully:', savedEntry);
         setExistingEntryId(savedEntry._id);
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
       } else {
         const errorData = await response.json();
+        console.error('Save failed:', errorData);
         setError(errorData.error || 'Failed to save journal entry');
       }
     } catch (error) {
@@ -171,17 +178,6 @@ const Journal = () => {
       {isLoading && <div className="loading-message">Loading...</div>}
 
       <div className="journal-form">
-        <div className="title-section">
-          <label>Title (Optional):</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Today's reflection title..."
-            maxLength="200"
-          />
-        </div>
-
         <div className="mood-section">
           <label>How do you feel after working on your goal?</label>
           <div className="mood-buttons">
@@ -209,8 +205,20 @@ const Journal = () => {
           </div>
         </div>
 
+        <div className="title-section">
+          <label>Title (Optional):</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Today's reflection title..."
+            maxLength="200"
+            disabled={isLoading}
+          />
+        </div>
+
         <div className="reflection-section">
-          <label>Write about today's goal progress:</label>
+          <label>Reflection for Today:</label>
           <textarea
             value={reflection}
             onChange={(e) => setReflection(e.target.value)}
@@ -266,40 +274,6 @@ const Journal = () => {
             disabled={isLoading}
           >
             + Add another gratitude
-          </button>
-        </div>
-
-        <div className="accomplishments-section">
-          <label>What did you accomplish today?</label>
-          {accomplishments.map((item, index) => (
-            <div key={index} className="array-input-container">
-              <input
-                type="text"
-                value={item}
-                onChange={(e) => updateArrayItem(setAccomplishments, accomplishments, index, e.target.value)}
-                placeholder="Today I accomplished..."
-                maxLength="200"
-                disabled={isLoading}
-              />
-              {accomplishments.length > 1 && (
-                <button 
-                  type="button" 
-                  onClick={() => removeArrayItem(setAccomplishments, accomplishments, index)}
-                  className="remove-item-btn"
-                  disabled={isLoading}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-          <button 
-            type="button" 
-            onClick={() => addArrayItem(setAccomplishments, accomplishments)}
-            className="add-item-btn"
-            disabled={isLoading}
-          >
-            + Add another accomplishment
           </button>
         </div>
 
