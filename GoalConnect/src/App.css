@@ -403,6 +403,39 @@ button[type="submit"]:hover {
   .goal-history-container {
     padding: 30px 20px;
   }
+
+  /* Mobile calendar view adjustments */
+  .calendar-view {
+    grid-template-columns: 1fr; /* Stack vertically on mobile */
+    gap: 25px; /* Reduce gap slightly on mobile */
+    padding: 20px; /* Reduce padding on mobile */
+    min-height: auto; /* Remove fixed height on mobile */
+  }
+
+  .calendar-container,
+  .selected-date-details {
+    padding: 20px; /* Reduce padding on mobile */
+    min-height: auto; /* Remove fixed height on mobile */
+  }
+
+  .goal-button {
+    padding: 14px 16px; /* Slightly reduce padding on mobile */
+    font-size: 15px; /* Slightly smaller font on mobile */
+  }
+
+  .goal-check {
+    width: 24px; /* Reduce size on mobile */
+    height: 24px;
+    margin-right: 12px;
+  }
+
+  .goal-title {
+    font-size: 16px; /* Reduce font size on mobile */
+  }
+
+  .goals-button-list {
+    gap: 10px; /* Reduce gap on mobile */
+  }
 }
 /* Goal Selection Styles */
 .subtitle {
@@ -589,7 +622,7 @@ input::placeholder {
 
 /* Goal History styles */
 .goal-history-container {
-  max-width: 900px;
+  max-width: 1100px;
   width: 100%;
   padding-top: 0px;
   scroll-margin-top: 80px;
@@ -649,17 +682,16 @@ input::placeholder {
 .calendar-view {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 25px;
-  min-height: 400px;
-  /* Remove max-height constraint to prevent overflow */
+  gap: 40px;
+  min-height: 500px;
+  padding: 30px;
 }
 
 .calendar-container {
   background-color: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 30px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-  /* Remove max-height to allow calendar to display properly */
   height: fit-content;
 }
 
@@ -668,7 +700,6 @@ input::placeholder {
   border: none;
   border-radius: 8px;
   font-family: inherit;
-  /* Remove max-height constraint */
 }
 
 .react-calendar__year-view__months__month {
@@ -726,18 +757,15 @@ input::placeholder {
 .selected-date-details {
   background-color: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 30px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-  /* Remove max-height to prevent overflow */
   height: fit-content;
-  min-height: 300px;
+  min-height: 400px;
 }
 
 .daily-goals {
   text-align: left;
-  margin-top: 15px;
-  max-height: 300px;
-  overflow-y: auto;
+  margin-top: 20px;
 }
 
 .daily-goals h4 {
@@ -782,43 +810,22 @@ input::placeholder {
   border-color: var(--success);
 }
 
-
 /* Goal buttons in daily view */
 .goals-button-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.goals-button-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.goals-button-list::-webkit-scrollbar-track {
-  background: var(--background);
-  border-radius: 3px;
-}
-
-.goals-button-list::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
-}
-
-.goals-button-list::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
+  gap: 12px;
+  padding-right: 0;
 }
 
 .goal-button {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 12px 15px;
+  padding: 16px 20px;
   background-color: var(--background);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
@@ -826,6 +833,7 @@ input::placeholder {
   margin: 0;
   position: relative;
   overflow: hidden;
+  font-size: 16px;
 }
 
 .goal-button:hover {
@@ -842,11 +850,11 @@ input::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid var(--primary);
-  margin-right: 12px;
+  margin-right: 16px;
   color: transparent;
   transition: all 0.3s ease;
 }
@@ -859,8 +867,9 @@ input::placeholder {
 
 .goal-title {
   flex-grow: 1;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .goal-button.completed .goal-title {
@@ -872,13 +881,9 @@ input::placeholder {
   text-align: center;
   color: var(--text-light);
   font-style: italic;
-  padding: 20px;
+  padding: 30px;
+  font-size: 16px;
 }
-
-
-
-
-
 
 /* Stats view */
 .stats-view {
