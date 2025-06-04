@@ -32,21 +32,6 @@ const Home = ({ onGetStarted }) => {
           <p className="hero-description">
             Build lasting habits, track your progress, and celebrate every achievement on your journey to becoming your best self.
           </p>
-          
-          <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-number">1000+</span>
-              <span className="stat-label">Active Users</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">50K+</span>
-              <span className="stat-label">Goals Completed</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">95%</span>
-              <span className="stat-label">Success Rate</span>
-            </div>
-          </div>
 
           <button className="hero-cta" onClick={onGetStarted}>
             <span>Start Your Journey</span>
@@ -74,7 +59,7 @@ const Home = ({ onGetStarted }) => {
           <div className="step-card">
             <div className="step-icon">🏆</div>
             <h3>Celebrate Progress</h3>
-            <p>Track streaks, view your calendar, and watch your consistency build unstoppable momentum.</p>
+            <p>Track streaks, view your calendar, and watch your consistency build unstoppable momentum through milestones.</p>
           </div>
         </div>
       </section>
@@ -85,8 +70,8 @@ const Home = ({ onGetStarted }) => {
         <div className="features-grid">
           <div className="feature-card">
             <div className="feature-icon">🎯</div>
-            <h3>Smart Goal Selection</h3>
-            <p>Choose from 10+ proven goal categories designed to improve your daily life and well-being.</p>
+            <h3>Goal Selection</h3>
+            <p>Choose from given goal categories or create your own. Designed to improve your daily life and well-being.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">📸</div>
@@ -132,26 +117,11 @@ const Home = ({ onGetStarted }) => {
         </div>
       </section>
 
-      {/* Goal Categories Preview */}
-      <section className="categories-preview">
-        <h2>Popular Goal Categories</h2>
-        <div className="categories-grid">
-          <div className="category-chip">💪 Exercise & Fitness</div>
-          <div className="category-chip">🧘 Mindfulness & Meditation</div>
-          <div className="category-chip">📚 Learning & Reading</div>
-          <div className="category-chip">🥗 Healthy Eating</div>
-          <div className="category-chip">💼 Personal Projects</div>
-          <div className="category-chip">🤝 Social Connection</div>
-          <div className="category-chip">😴 Sleep & Rest</div>
-          <div className="category-chip">📱 Digital Wellness</div>
-        </div>
-      </section>
-
       {/* Final CTA Section */}
       <section className="final-cta">
         <div className="cta-content">
           <h2>Ready to Transform Your Life?</h2>
-          <p>Join thousands of users who are already building better habits and achieving their goals.</p>
+          <p>Join today and start building better habits and achieving their goals.</p>
           <button className="cta-button-large" onClick={onGetStarted}>
             Get Started Today
           </button>
