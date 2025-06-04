@@ -58,7 +58,8 @@ You have two options for the database:
 4. **Set up network access:**
    - Go to "Network Access" in the left sidebar
    - Click "Add IP Address"
-   - Click "Allow Access from Anywhere" (for development only!)
+   - Click "Add Current IP Address"
+        - (if switching IP addresses constantly, click "Allow Access from Anywhere" making it ip:0.0.0.0/0 which would be technically insecure so try to avoid) 
    - Click "Confirm"
 
 5. **Get your connection string:**
