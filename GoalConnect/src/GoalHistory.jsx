@@ -276,8 +276,18 @@ const GoalHistory = () => {
     return moodMap[mood] || '😐';
   };
 
+  // Prevent body scroll when modals are open to avoid layout shifts/glitches
+  useEffect(() => {
+    const shouldLockScroll = showGoalDetails || showJournalModal;
+    if (shouldLockScroll) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [showGoalDetails, showJournalModal]);
+
   return (
-    <div className="goal-history-container">
+    <div className={`goal-history-container ${showGoalDetails || showJournalModal ? 'modal-active' : ''}`}>
       <div className="goal-history-header">
         <h1>Memories & Progress History</h1>
         
@@ -499,22 +509,28 @@ const GoalHistory = () => {
                             {journalEntry.gratitude && journalEntry.gratitude.length > 0 && (
                               <div className="journal-gratitude">
                                 <h5>Gratitude:</h5>
-                                <ul>
+                                <div className="gratitude-items">
                                   {journalEntry.gratitude.map((item, index) => (
-                                    <li key={index}>{item}</li>
+                                    <div key={index} className="gratitude-item">
+                                      <div className="gratitude-icon">💝</div>
+                                      <div className="gratitude-text">{item}</div>
+                                    </div>
                                   ))}
-                                </ul>
+                                </div>
                               </div>
                             )}
 
                             {journalEntry.challenges && journalEntry.challenges.length > 0 && (
                               <div className="journal-challenges">
                                 <h5>Challenges:</h5>
-                                <ul>
+                                <div className="challenges-items">
                                   {journalEntry.challenges.map((item, index) => (
-                                    <li key={index}>{item}</li>
+                                    <div key={index} className="challenge-item">
+                                      <div className="challenge-icon">💪</div>
+                                      <div className="challenge-text">{item}</div>
+                                    </div>
                                   ))}
-                                </ul>
+                                </div>
                               </div>
                             )}
 

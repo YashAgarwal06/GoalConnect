@@ -369,10 +369,19 @@ function GoalSelection() {
     setDragIndex(null);
   };
 
+  // Prevent body scroll when the goal details modal is open to avoid layout shift/glitches
+  useEffect(() => {
+    if (currentGoal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [currentGoal]);
+
   // If user already has a goal for today, show the goal management view
   if (currentGoal) {
     return (
-      <div className="goal-selection-container two-column">
+      <div className={`goal-selection-container two-column ${currentGoal ? 'modal-active' : ''}`}>
         {/* Left – add/select goal */}
         <div className="goal-selection-left">
           <h2>Select / Add Goal for Today</h2>
@@ -557,7 +566,7 @@ function GoalSelection() {
   }
 
   return (
-    <div className="goal-selection-container two-column">
+    <div className={`goal-selection-container two-column ${currentGoal ? 'modal-active' : ''}`}>
       {/* Left – add/select goal */}
       <div className="goal-selection-left">
         <h2>Select / Add Goal for Today</h2>
