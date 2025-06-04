@@ -219,14 +219,36 @@ node server.js       # Start the server
    - Check if the MongoDB URI in `.env` is correct
    - Try connecting manually: `mongosh mongodb://localhost:27017/goalconnect`
 
-3. **Module not found errors:**
+3. **MongoDB Atlas IP Address Not Whitelisted (Common Issue):**
+   If you're using MongoDB Atlas and getting connection timeout or authentication errors, your current IP address might not be whitelisted:
+   
+   **Symptoms:**
+   - Connection timeout errors
+   - "MongoNetworkError: failed to connect to server"
+   - Authentication failures when credentials are correct
+   
+   **Solution:**
+   1. Go to your [MongoDB Atlas dashboard](https://cloud.mongodb.com)
+   2. Navigate to your project
+   3. Click on "Network Access" in the left sidebar
+   4. Check if your current IP address is listed
+   5. If not, click "Add IP Address"
+   6. Choose one of these options:
+      - **Add Current IP Address** (recommended for security)
+      - **Allow Access from Anywhere** (0.0.0.0/0) - ⚠️ **only for development**
+   7. Click "Confirm"
+   8. Wait 1-2 minutes for changes to propagate
+   
+   **Note:** Your IP address may change if you're on a dynamic network (home WiFi, mobile hotspot, etc.). You may need to repeat this process if you change networks.
+
+4. **Module not found errors:**
    ```bash
    # Delete node_modules and reinstall
    rm -rf node_modules package-lock.json
    npm install
    ```
 
-4. **Permission errors (Linux/macOS):**
+5. **Permission errors (Linux/macOS):**
    ```bash
    # Fix npm permissions
    sudo chown -R $(whoami) ~/.npm
