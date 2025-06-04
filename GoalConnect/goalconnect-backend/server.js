@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const userRoutes = require('./routes/users');
 const goalRoutes = require('./routes/goals');
+const journalRoutes = require('./routes/journal');
 
 // Debug: Check environment variables
 console.log('Environment variables:', {
@@ -29,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/api/journal', journalRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
