@@ -252,122 +252,147 @@ const GoalHistory = () => {
       </div>
       
       {activeTab === 'calendar' && (
-        <div className="calendar-view">
-          <div className="calendar-container">
-            <Calendar
-              onChange={handleDateChange}
-              // onActiveStartDateChange={(activeStartDate) => handleArrowClick(activeStartDate)}
-              value={selectedDate}
-              // tileContent={renderCalendarTileContent}
-              className="goal-calendar"
-              minDetail="year"
-              maxDetail="month"
-              maxDate={new Date()}
-              navigationLabel={({ date }) => 
-                date.toLocaleString('default', { month: 'long', year: 'numeric' })
-              }
-            />
-          </div>
-          
-          <div className="selected-date-details">
-            <h3>Selected Date: {selectedDate.toDateString()}</h3>
-            <div className="daily-goals">
-              <h4>Goals on this day</h4>
-              {dailyGoals.length > 0 ? (
-                <div className="goals-button-list">
-                  {dailyGoals.map(goal => (
-                    <div key={goal.id} className="goal-item-container">
-                      <button
-                        className={`goal-button ${goal.completed ? 'completed' : ''}`}
-                        onClick={() => toggleGoalCompletion(goal.id)}
-                      >
-                        <span className="goal-check">
-                          {goal.completed ? '✓' : ''}
-                        </span>
-                        <span className="goal-title">{goal.title}</span>
-                      </button>
-                      <button 
-                        className="view-details-btn"
-                        onClick={() => viewGoalDetails(goal.id)}
-                        title="View Details"
-                      >
-                        👁️
-                      </button>
-                    </div>
-                  ))}
+        <div className="calendar-tab-content">
+          {/* Streak Display - Moved above calendar */}
+          <div className="goal-streak-container">
+            <h2>🔥 Current Streak</h2>
+            <div className="streak-display">
+              {currentStreak > 0 ? (
+                <div className="streak-message">
+                  <div className="streak-count">{currentStreak}</div>
+                  <div className="streak-text">
+                    {currentStreak === 1 
+                      ? "You have a streak of 1 day where you completed all your goals! Keep it up!" 
+                      : `You have a streak of ${currentStreak} days where you have completed all your goals! Amazing consistency! 🎉`
+                    }
+                  </div>
                 </div>
               ) : (
-                <p className="no-goals-message">No goals set for this date</p>
-              )}
-
-              {/* Goal Details Modal */}
-              {showGoalDetails && selectedGoalForDetails && (
-                <div className="goal-details-modal">
-                  <div className="modal-overlay" onClick={closeGoalDetails}></div>
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <h3>Goal Details</h3>
-                      <button className="close-modal-btn" onClick={closeGoalDetails}>
-                        ✕
-                      </button>
-                    </div>
-                    
-                    <div className="modal-body">
-                      <div className="goal-info">
-                        <h4 className="goal-description">
-                          🎯 {selectedGoalForDetails.description}
-                        </h4>
-                        
-                        <div className="goal-metadata">
-                          <p><strong>Date:</strong> {new Date(selectedGoalForDetails.date).toLocaleDateString()}</p>
-                          <p><strong>Category:</strong> {selectedGoalForDetails.category || 'Personal'}</p>
-                          <p><strong>Priority:</strong> {selectedGoalForDetails.priority || 'Medium'}</p>
-                          <p><strong>Status:</strong> 
-                            <span className={`status-badge ${selectedGoalForDetails.isCompleted ? 'completed' : 'pending'}`}>
-                              {selectedGoalForDetails.isCompleted ? '✅ Completed' : '⏳ Pending'}
-                            </span>
-                          </p>
-                        </div>
-
-                        {selectedGoalForDetails.notes && (
-                          <div className="goal-notes">
-                            <h5>📝 Notes:</h5>
-                            <p>{selectedGoalForDetails.notes}</p>
-                          </div>
-                        )}
-
-                        {selectedGoalForDetails.imageUrl && (
-                          <div className="goal-image-section">
-                            <h5>📷 Memory:</h5>
-                            <div className="goal-image-container">
-                              <img 
-                                src={`http://localhost:3001/${selectedGoalForDetails.imageUrl}`}
-                                alt="Goal memory"
-                                className="goal-detail-image"
-                              />
-                              {selectedGoalForDetails.imageMetadata && (
-                                <div className="image-info">
-                                  <small>
-                                    Original: {selectedGoalForDetails.imageMetadata.originalName} | 
-                                    Size: {Math.round(selectedGoalForDetails.imageMetadata.size / 1024)}KB |
-                                    Uploaded: {new Date(selectedGoalForDetails.imageMetadata.uploadedAt).toLocaleDateString()}
-                                  </small>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {!selectedGoalForDetails.imageUrl && (
-                          <div className="no-image-section">
-                            <p className="no-image-text">📷 No memory image uploaded for this goal</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                <div className="streak-message">
+                  <div className="streak-count">0</div>
+                  <div className="streak-text">
+                    Start your streak today by completing all your goals! Every journey begins with a single step. 💪
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="calendar-view">
+            <div className="calendar-container">
+              <Calendar
+                onChange={handleDateChange}
+                value={selectedDate}
+                className="goal-calendar"
+                minDetail="year"
+                maxDetail="month"
+                maxDate={new Date()}
+                navigationLabel={({ date }) => 
+                  date.toLocaleString('default', { month: 'long', year: 'numeric' })
+                }
+              />
+            </div>
+            
+            <div className="selected-date-details">
+              <h3>Selected Date: {selectedDate.toDateString()}</h3>
+              <div className="daily-goals">
+                <h4>Goals on this day</h4>
+                {dailyGoals.length > 0 ? (
+                  <div className="goals-button-list">
+                    {dailyGoals.map(goal => (
+                      <div key={goal.id} className="goal-item-container">
+                        <button
+                          className={`goal-button ${goal.completed ? 'completed' : ''}`}
+                          onClick={() => toggleGoalCompletion(goal.id)}
+                        >
+                          <span className="goal-check">
+                            {goal.completed ? '✓' : ''}
+                          </span>
+                          <span className="goal-title">{goal.title}</span>
+                        </button>
+                        <button 
+                          className="view-details-btn"
+                          onClick={() => viewGoalDetails(goal.id)}
+                          title="View Details"
+                        >
+                          👁️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-goals-message">No goals set for this date</p>
+                )}
+
+                {/* Goal Details Modal */}
+                {showGoalDetails && selectedGoalForDetails && (
+                  <div className="goal-details-modal">
+                    <div className="modal-overlay" onClick={closeGoalDetails}></div>
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h3>Goal Details</h3>
+                        <button className="close-modal-btn" onClick={closeGoalDetails}>
+                          ✕
+                        </button>
+                      </div>
+                      
+                      <div className="modal-body">
+                        <div className="goal-info">
+                          <h4 className="goal-description">
+                            🎯 {selectedGoalForDetails.description}
+                          </h4>
+                          
+                          <div className="goal-metadata">
+                            <p><strong>Date:</strong> {new Date(selectedGoalForDetails.date).toLocaleDateString()}</p>
+                            <p><strong>Category:</strong> {selectedGoalForDetails.category || 'Personal'}</p>
+                            <p><strong>Priority:</strong> {selectedGoalForDetails.priority || 'Medium'}</p>
+                            <p><strong>Status:</strong> 
+                              <span className={`status-badge ${selectedGoalForDetails.isCompleted ? 'completed' : 'pending'}`}>
+                                {selectedGoalForDetails.isCompleted ? '✅ Completed' : '⏳ Pending'}
+                              </span>
+                            </p>
+                          </div>
+
+                          {selectedGoalForDetails.notes && (
+                            <div className="goal-notes">
+                              <h5>📝 Notes:</h5>
+                              <p>{selectedGoalForDetails.notes}</p>
+                            </div>
+                          )}
+
+                          {selectedGoalForDetails.imageUrl && (
+                            <div className="goal-image-section">
+                              <h5>📷 Memory:</h5>
+                              <div className="goal-image-container">
+                                <img 
+                                  src={`http://localhost:3001/${selectedGoalForDetails.imageUrl}`}
+                                  alt="Goal memory"
+                                  className="goal-detail-image"
+                                />
+                                {selectedGoalForDetails.imageMetadata && (
+                                  <div className="image-info">
+                                    <small>
+                                      Original: {selectedGoalForDetails.imageMetadata.originalName} | 
+                                      Size: {Math.round(selectedGoalForDetails.imageMetadata.size / 1024)}KB |
+                                      Uploaded: {new Date(selectedGoalForDetails.imageMetadata.uploadedAt).toLocaleDateString()}
+                                    </small>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {!selectedGoalForDetails.imageUrl && (
+                            <div className="no-image-section">
+                              <p className="no-image-text">📷 No memory image uploaded for this goal</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -416,33 +441,6 @@ const GoalHistory = () => {
               </div>
             </div>
             
-          </div>
-        </div>
-      )}
-
-      {/* Streak Display - Only show on Calendar tab */}
-      {activeTab === 'calendar' && (
-        <div className="goal-streak-container">
-          <h2>🔥 Current Streak</h2>
-          <div className="streak-display">
-            {currentStreak > 0 ? (
-              <div className="streak-message">
-                <div className="streak-count">{currentStreak}</div>
-                <div className="streak-text">
-                  {currentStreak === 1 
-                    ? "You have a streak of 1 day where you completed all your goals! Keep it up!" 
-                    : `You have a streak of ${currentStreak} days where you have completed all your goals! Amazing consistency! 🎉`
-                  }
-                </div>
-              </div>
-            ) : (
-              <div className="streak-message">
-                <div className="streak-count">0</div>
-                <div className="streak-text">
-                  Start your streak today by completing all your goals! Every journey begins with a single step. 💪
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}

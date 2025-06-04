@@ -629,14 +629,21 @@ input::placeholder {
   transform: translateY(-2px);
 }
 
-/* Calendar view styles */
+/* Calendar tab content container */
+.calendar-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  width: 100%;
+}
+
+/* Updated Calendar view styles */
 .calendar-view {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 25px;
-  max-height: calc(100vh - 300px);
-  overflow-y: auto;
-  padding-bottom: 20px;
+  min-height: 400px;
+  /* Remove max-height constraint to prevent overflow */
 }
 
 .calendar-container {
@@ -644,7 +651,8 @@ input::placeholder {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-  max-height: 450px;
+  /* Remove max-height to allow calendar to display properly */
+  height: fit-content;
 }
 
 .goal-calendar {
@@ -652,7 +660,7 @@ input::placeholder {
   border: none;
   border-radius: 8px;
   font-family: inherit;
-  max-height: 350px;
+  /* Remove max-height constraint */
 }
 
 .react-calendar__year-view__months__month {
@@ -712,8 +720,9 @@ input::placeholder {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-  max-height: 450px;
-  overflow-y: auto;
+  /* Remove max-height to prevent overflow */
+  height: fit-content;
+  min-height: 300px;
 }
 
 .daily-goals {
@@ -997,19 +1006,21 @@ input::placeholder {
   margin: 0;
 }
 
-/* Streak display */
+/* Updated Streak display - More compact */
 .goal-streak-container {
   background-color: white;
   border-radius: 12px;
-  padding: 25px;
-  margin-top: 30px;
+  padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  /* Remove margin-top since it's now at the top */
+  margin-bottom: 0;
 }
 
 .goal-streak-container h2 {
   color: var(--primary);
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
 }
 
 .streak-display {
@@ -1018,30 +1029,31 @@ input::placeholder {
 
 .streak-message {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 15px;
+  justify-content: center;
+  gap: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--light), #f0f7ff);
+  border-radius: 12px;
+  border-left: 4px solid var(--accent);
 }
 
 .streak-count {
   display: block;
-  font-size: 4rem;
+  font-size: 2.5rem;
   font-weight: bold;
   color: var(--accent);
-  margin-bottom: 5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 80px;
 }
 
 .streak-text {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--text);
-  line-height: 1.6;
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  background: linear-gradient(135deg, var(--light), #f0f7ff);
-  border-radius: 12px;
-  border-left: 4px solid var(--accent);
+  line-height: 1.4;
+  flex: 1;
+  text-align: left;
 }
 
 .streaks {
@@ -1071,6 +1083,20 @@ input::placeholder {
     grid-template-columns: 1fr;
   }
 
+  .calendar-tab-content {
+    gap: 20px;
+  }
+
+  .streak-message {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .streak-text {
+    text-align: center;
+  }
+
   .milestone-grid {
     grid-template-columns: 1fr;
   }
@@ -1089,12 +1115,7 @@ input::placeholder {
   }
   
   .streak-count {
-    font-size: 3rem;
-  }
-  
-  .streak-text {
-    font-size: 1rem;
-    padding: 15px;
+    font-size: 2rem;
   }
   
   .chart-container {
