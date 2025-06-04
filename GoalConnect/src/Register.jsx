@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Register = () => {
+const Register = ({ onRegisterSuccess }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -8,6 +8,7 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setMessage('');
     try {
       const res = await fetch('http://localhost:3001/api/users/register', {
         method: 'POST',
@@ -19,19 +20,22 @@ const Register = () => {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        setMessage('Registration successful!');
+        setMessage('Registration successful! Please login.');
+        if (onRegisterSuccess) {
+          onRegisterSuccess();
+        }
       } else {
         setMessage(data.error || 'Registration failed.');
       }
     } catch (error) {
-      setMessage('Network error during registration.');
+      setMessage('Network error during registration. Please try again.');
+      console.error("Register error:", error);
     }
   };
 
   return (
     <div className="register-container">
-      <h1>Register</h1>
+      <h2>Register</h2>
       <form onSubmit={handleRegister}>
         <div className="form-group">
           <label>Username:</label>
@@ -62,7 +66,7 @@ const Register = () => {
         </div>
         <button type="submit">Register</button>
       </form>
-      <p>{message}</p>
+      {message && <p className={`register-message ${message.includes('successful') ? 'success' : 'error'}`}>{message}</p>}
     </div>
   );
 };

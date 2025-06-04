@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setMessage('');
     try {
       const res = await fetch('http://localhost:3001/api/users/login', {
         method: 'POST',
@@ -20,17 +21,21 @@ const Login = () => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setMessage('Login successful!');
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
       } else {
         setMessage(data.error || 'Login failed.');
       }
     } catch (error) {
-      setMessage('Network error during login.');
+      setMessage('Network error during login. Please try again.');
+      console.error("Login error:", error);
     }
   };
 
   return (
     <div className="login-container">
-      <h1>Login</h1>
+      <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <div className="form-group">
           <label>Email:</label>
@@ -52,7 +57,7 @@ const Login = () => {
         </div>
         <button type="submit">Log In</button>
       </form>
-      <p>{message}</p>
+      {message && <p className={`login-message ${message.includes('successful') ? 'success' : 'error'}`}>{message}</p>}
     </div>
   );
 };
