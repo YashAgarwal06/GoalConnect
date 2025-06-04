@@ -11,6 +11,9 @@ const GoalHistory = () => {
   const [selectedGoalForDetails, setSelectedGoalForDetails] = useState(null);
   const [showGoalDetails, setShowGoalDetails] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [journalEntry, setJournalEntry] = useState(null);
+  const [showJournalModal, setShowJournalModal] = useState(false);
+  const [loadingJournal, setLoadingJournal] = useState(false);
   const [statistics, setStatistics] = useState({
     totalGoals: 0,
     completedGoals: 0,
@@ -192,6 +195,44 @@ const GoalHistory = () => {
     }
   };
 
+  // Function to fetch and display journal entry for selected date
+  const viewJournalReflection = async () => {
+    try {
+      setLoadingJournal(true);
+      const date = new Date(selectedDate);
+      date.setHours(0, 0, 0, 0);
+      const formattedDate = date.toISOString().split('T')[0];
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`http://localhost:3001/api/journal/date/${formattedDate}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const entry = await response.json();
+        setJournalEntry(entry);
+        setShowJournalModal(true);
+      } else {
+        // No journal entry found for this date
+        setJournalEntry(null);
+        setShowJournalModal(true);
+      }
+    } catch (error) {
+      setError('Failed to fetch journal entry');
+    } finally {
+      setLoadingJournal(false);
+    }
+  };
+
+  // Function to close journal modal
+  const closeJournalModal = () => {
+    setShowJournalModal(false);
+    setJournalEntry(null);
+  };
+
   // Function to handle time metric selection
   const handleTimeMetricChange = (metric) => {
     setSelectedTimeMetric(metric);
@@ -220,6 +261,18 @@ const GoalHistory = () => {
   const closeGoalDetails = () => {
     setShowGoalDetails(false);
     setSelectedGoalForDetails(null);
+  };
+
+  // Helper function to format mood emoji
+  const getMoodEmoji = (mood) => {
+    const moodMap = {
+      'very_happy': '😊',
+      'happy': '😊',
+      'neutral': '😐',
+      'sad': '😞',
+      'very_sad': '😞'
+    };
+    return moodMap[mood] || '😐';
   };
 
   return (
@@ -295,6 +348,18 @@ const GoalHistory = () => {
             
             <div className="selected-date-details">
               <h3>Selected Date: {selectedDate.toDateString()}</h3>
+              
+              {/* Journal Reflection Button */}
+              <div className="journal-section">
+                <button 
+                  className="journal-reflection-btn"
+                  onClick={viewJournalReflection}
+                  disabled={loadingJournal}
+                >
+                  📝 {loadingJournal ? 'Loading...' : 'Open Journal Reflection'}
+                </button>
+              </div>
+              
               <div className="daily-goals">
                 <h4>Goals on this day</h4>
                 {dailyGoals.length > 0 ? (
@@ -388,6 +453,106 @@ const GoalHistory = () => {
                             </div>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Journal Reflection Modal */}
+                {showJournalModal && (
+                  <div className="journal-modal">
+                    <div className="modal-overlay" onClick={closeJournalModal}></div>
+                    <div className="modal-content journal-modal-content">
+                      <div className="modal-header">
+                        <h3>📝 Journal Reflection - {selectedDate.toDateString()}</h3>
+                        <button className="close-modal-btn" onClick={closeJournalModal}>
+                          ✕
+                        </button>
+                      </div>
+                      
+                      <div className="modal-body">
+                        {journalEntry ? (
+                          <div className="journal-entry-display">
+                            {journalEntry.title && (
+                              <div className="journal-title">
+                                <h4>{journalEntry.title}</h4>
+                              </div>
+                            )}
+
+                            <div className="journal-mood">
+                              <p><strong>Mood:</strong> {getMoodEmoji(journalEntry.mood)} {journalEntry.mood.replace('_', ' ')}</p>
+                            </div>
+
+                            <div className="journal-content">
+                              <h5>Daily Progress:</h5>
+                              <p className="journal-text">{journalEntry.content}</p>
+                            </div>
+
+                            {journalEntry.reflection && (
+                              <div className="journal-reflection">
+                                <h5>Areas for Improvement:</h5>
+                                <p className="journal-text">{journalEntry.reflection}</p>
+                              </div>
+                            )}
+
+                            {journalEntry.gratitude && journalEntry.gratitude.length > 0 && (
+                              <div className="journal-gratitude">
+                                <h5>Gratitude:</h5>
+                                <ul>
+                                  {journalEntry.gratitude.map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {journalEntry.accomplishments && journalEntry.accomplishments.length > 0 && (
+                              <div className="journal-accomplishments">
+                                <h5>Accomplishments:</h5>
+                                <ul>
+                                  {journalEntry.accomplishments.map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {journalEntry.challenges && journalEntry.challenges.length > 0 && (
+                              <div className="journal-challenges">
+                                <h5>Challenges:</h5>
+                                <ul>
+                                  {journalEntry.challenges.map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {journalEntry.weather && (
+                              <div className="journal-weather">
+                                <p><strong>Weather:</strong> {journalEntry.weather}</p>
+                              </div>
+                            )}
+
+                            {journalEntry.location && (
+                              <div className="journal-location">
+                                <p><strong>Location:</strong> {journalEntry.location}</p>
+                              </div>
+                            )}
+
+                            <div className="journal-metadata">
+                              <small>
+                                Created: {new Date(journalEntry.createdAt).toLocaleString()} |
+                                Updated: {new Date(journalEntry.updatedAt).toLocaleString()}
+                              </small>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="no-journal-entry">
+                            <p>📝 No journal reflection found for {selectedDate.toDateString()}</p>
+                            <p>Visit the Journal tab to create a reflection for this day!</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

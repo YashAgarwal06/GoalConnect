@@ -2,77 +2,350 @@ import React, { useState, useEffect } from 'react';
 import './Journal.css';
 
 const Journal = () => {
-  const [mood, setMood] = useState('');
+  const [mood, setMood] = useState('neutral');
   const [reflection, setReflection] = useState('');
   const [improvement, setImprovement] = useState('');
+  const [title, setTitle] = useState('');
+  const [gratitude, setGratitude] = useState(['']);
+  const [challenges, setChallenges] = useState(['']);
+  const [accomplishments, setAccomplishments] = useState(['']);
   const [isSaved, setIsSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [existingEntryId, setExistingEntryId] = useState(null);
 
-  // Load saved entry on mount
+  // Load existing journal entry for today on mount
   useEffect(() => {
-    const saved = localStorage.getItem('journalEntry');
-    if (saved) {
-      const entry = JSON.parse(saved);
-      setMood(entry.mood || '');
-      setReflection(entry.reflection || '');
-      setImprovement(entry.improvement || '');
-    }
-  }, []);
+    const loadTodaysEntry = async () => {
+      try {
+        setIsLoading(true);
+        const today = new Date().toISOString().split('T')[0];
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`http://localhost:3001/api/journal/date/${today}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-  // Save current entry
-  const handleSave = () => {
-    const journalEntry = {
-      date: new Date().toISOString().split('T')[0],
-      mood,
-      reflection,
-      improvement
+        if (response.ok) {
+          const entry = await response.json();
+          if (entry) {
+            // Map backend field names to frontend state
+            setMood(entry.mood || 'neutral');
+            setReflection(entry.content || '');
+            setImprovement(entry.reflection || '');
+            setTitle(entry.title || '');
+            setGratitude(entry.gratitude && entry.gratitude.length > 0 ? entry.gratitude : ['']);
+            setChallenges(entry.challenges && entry.challenges.length > 0 ? entry.challenges : ['']);
+            setAccomplishments(entry.accomplishments && entry.accomplishments.length > 0 ? entry.accomplishments : ['']);
+            setExistingEntryId(entry._id);
+          }
+        }
+        setError(null);
+      } catch (error) {
+        console.error('Error loading journal entry:', error);
+        setError('Failed to load existing journal entry');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    localStorage.setItem('journalEntry', JSON.stringify(journalEntry));
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+    loadTodaysEntry();
+  }, []);
+
+  // Helper function to add item to array
+  const addArrayItem = (setter, array) => {
+    setter([...array, '']);
+  };
+
+  // Helper function to update array item
+  const updateArrayItem = (setter, array, index, value) => {
+    const newArray = [...array];
+    newArray[index] = value;
+    setter(newArray);
+  };
+
+  // Helper function to remove array item
+  const removeArrayItem = (setter, array, index) => {
+    if (array.length > 1) {
+      const newArray = array.filter((_, i) => i !== index);
+      setter(newArray);
+    }
+  };
+
+  // Map frontend mood values to backend enum values
+  const mapMoodToBackend = (frontendMood) => {
+    const moodMap = {
+      'positive': 'happy',
+      'neutral': 'neutral',
+      'negative': 'sad'
+    };
+    return moodMap[frontendMood] || 'neutral';
+  };
+
+  // Map backend mood values to frontend values
+  const mapMoodFromBackend = (backendMood) => {
+    const moodMap = {
+      'very_happy': 'positive',
+      'happy': 'positive',
+      'neutral': 'neutral',
+      'sad': 'negative',
+      'very_sad': 'negative'
+    };
+    return moodMap[backendMood] || 'neutral';
+  };
+
+  // Save journal entry
+  const handleSave = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const today = new Date().toISOString().split('T')[0];
+      const token = localStorage.getItem('token');
+      
+      // Filter out empty strings from arrays
+      const filteredGratitude = gratitude.filter(item => item.trim() !== '');
+      const filteredChallenges = challenges.filter(item => item.trim() !== '');
+      const filteredAccomplishments = accomplishments.filter(item => item.trim() !== '');
+
+      const journalEntry = {
+        date: today,
+        title: title.trim(),
+        content: reflection.trim(),
+        mood: mapMoodToBackend(mood),
+        reflection: improvement.trim(),
+        gratitude: filteredGratitude,
+        challenges: filteredChallenges,
+        accomplishments: filteredAccomplishments
+      };
+
+      let response;
+      
+      if (existingEntryId) {
+        // Update existing entry
+        response = await fetch(`http://localhost:3001/api/journal/${existingEntryId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(journalEntry)
+        });
+      } else {
+        // Create new entry
+        response = await fetch('http://localhost:3001/api/journal', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(journalEntry)
+        });
+      }
+
+      if (response.ok) {
+        const savedEntry = await response.json();
+        setExistingEntryId(savedEntry._id);
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to save journal entry');
+      }
+    } catch (error) {
+      console.error('Error saving journal entry:', error);
+      setError('Failed to save journal entry');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="journal-container">
       <h1>📝 Daily Reflection</h1>
 
-      <div className="mood-section">
-        <label>How do you feel after working on your goal?</label>
-        <div className="mood-buttons">
-          <button className={mood === 'positive' ? 'selected' : ''} onClick={() => setMood('positive')}>😊</button>
-          <button className={mood === 'neutral' ? 'selected' : ''} onClick={() => setMood('neutral')}>😐</button>
-          <button className={mood === 'negative' ? 'selected' : ''} onClick={() => setMood('negative')}>😞</button>
+      {error && <div className="error-message">{error}</div>}
+      {isLoading && <div className="loading-message">Loading...</div>}
+
+      <div className="journal-form">
+        <div className="title-section">
+          <label>Title (Optional):</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Today's reflection title..."
+            maxLength="200"
+          />
         </div>
-      </div>
 
-      <div className="reflection-section">
-        <label>Write about today’s goal progress:</label>
-        <textarea
-          value={reflection}
-          onChange={(e) => setReflection(e.target.value)}
-          placeholder="Today I..."
-          rows="6"
-        />
-      </div>
+        <div className="mood-section">
+          <label>How do you feel after working on your goal?</label>
+          <div className="mood-buttons">
+            <button 
+              className={mood === 'positive' ? 'selected' : ''} 
+              onClick={() => setMood('positive')}
+              disabled={isLoading}
+            >
+              😊
+            </button>
+            <button 
+              className={mood === 'neutral' ? 'selected' : ''} 
+              onClick={() => setMood('neutral')}
+              disabled={isLoading}
+            >
+              😐
+            </button>
+            <button 
+              className={mood === 'negative' ? 'selected' : ''} 
+              onClick={() => setMood('negative')}
+              disabled={isLoading}
+            >
+              😞
+            </button>
+          </div>
+        </div>
 
-      <div className="improvement-section">
-        <label>What could you improve on?</label>
-        <input
-          type="text"
-          value={improvement}
-          onChange={(e) => setImprovement(e.target.value)}
-          placeholder="Next time I could..."
-        />
-      </div>
+        <div className="reflection-section">
+          <label>Write about today's goal progress:</label>
+          <textarea
+            value={reflection}
+            onChange={(e) => setReflection(e.target.value)}
+            placeholder="Today I..."
+            rows="6"
+            maxLength="5000"
+            disabled={isLoading}
+          />
+          <small>{reflection.length}/5000 characters</small>
+        </div>
 
-      <div className="journal-save-container">
-        <button
-          className="save-journal-button"
-          onClick={handleSave}
-          disabled={!mood || !reflection}
-        >
-          ✏️ {isSaved ? 'Saved!' : 'Save Reflection'}
-        </button>
+        <div className="improvement-section">
+          <label>What could you improve on?</label>
+          <textarea
+            value={improvement}
+            onChange={(e) => setImprovement(e.target.value)}
+            placeholder="Next time I could..."
+            rows="3"
+            maxLength="2000"
+            disabled={isLoading}
+          />
+          <small>{improvement.length}/2000 characters</small>
+        </div>
+
+        <div className="gratitude-section">
+          <label>What are you grateful for today?</label>
+          {gratitude.map((item, index) => (
+            <div key={index} className="array-input-container">
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => updateArrayItem(setGratitude, gratitude, index, e.target.value)}
+                placeholder="I'm grateful for..."
+                maxLength="200"
+                disabled={isLoading}
+              />
+              {gratitude.length > 1 && (
+                <button 
+                  type="button" 
+                  onClick={() => removeArrayItem(setGratitude, gratitude, index)}
+                  className="remove-item-btn"
+                  disabled={isLoading}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <button 
+            type="button" 
+            onClick={() => addArrayItem(setGratitude, gratitude)}
+            className="add-item-btn"
+            disabled={isLoading}
+          >
+            + Add another gratitude
+          </button>
+        </div>
+
+        <div className="accomplishments-section">
+          <label>What did you accomplish today?</label>
+          {accomplishments.map((item, index) => (
+            <div key={index} className="array-input-container">
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => updateArrayItem(setAccomplishments, accomplishments, index, e.target.value)}
+                placeholder="Today I accomplished..."
+                maxLength="200"
+                disabled={isLoading}
+              />
+              {accomplishments.length > 1 && (
+                <button 
+                  type="button" 
+                  onClick={() => removeArrayItem(setAccomplishments, accomplishments, index)}
+                  className="remove-item-btn"
+                  disabled={isLoading}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <button 
+            type="button" 
+            onClick={() => addArrayItem(setAccomplishments, accomplishments)}
+            className="add-item-btn"
+            disabled={isLoading}
+          >
+            + Add another accomplishment
+          </button>
+        </div>
+
+        <div className="challenges-section">
+          <label>What challenges did you face?</label>
+          {challenges.map((item, index) => (
+            <div key={index} className="array-input-container">
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => updateArrayItem(setChallenges, challenges, index, e.target.value)}
+                placeholder="A challenge I faced was..."
+                maxLength="200"
+                disabled={isLoading}
+              />
+              {challenges.length > 1 && (
+                <button 
+                  type="button" 
+                  onClick={() => removeArrayItem(setChallenges, challenges, index)}
+                  className="remove-item-btn"
+                  disabled={isLoading}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <button 
+            type="button" 
+            onClick={() => addArrayItem(setChallenges, challenges)}
+            className="add-item-btn"
+            disabled={isLoading}
+          >
+            + Add another challenge
+          </button>
+        </div>
+
+        <div className="journal-save-container">
+          <button
+            className="save-journal-button"
+            onClick={handleSave}
+            disabled={!reflection.trim() || isLoading}
+          >
+            ✏️ {isLoading ? 'Saving...' : (isSaved ? 'Saved!' : (existingEntryId ? 'Update Reflection' : 'Save Reflection'))}
+          </button>
+        </div>
       </div>
     </div>
   );

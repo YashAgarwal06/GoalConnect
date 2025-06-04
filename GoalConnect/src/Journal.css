@@ -16,6 +16,44 @@
   font-size: 24px;
 }
 
+/* Error and Loading Messages */
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+}
+
+.loading-message {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #bee5eb;
+  text-align: center;
+}
+
+.journal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Form sections */
+.title-section,
+.mood-section,
+.reflection-section,
+.improvement-section,
+.gratitude-section,
+.accomplishments-section,
+.challenges-section {
+  margin-bottom: 20px;
+}
+
 label {
   display: block;
   margin-bottom: 8px;
@@ -34,8 +72,8 @@ input[type="text"] {
   font-size: 16px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  margin-bottom: 24px;
   color: #2c3e50;
+  box-sizing: border-box;
 }
 
 textarea,
@@ -53,6 +91,77 @@ input[type="text"]:focus {
   outline: none;
 }
 
+textarea:disabled,
+input[type="text"]:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Character counter */
+small {
+  display: block;
+  color: #6c757d;
+  font-size: 12px;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Array input containers */
+.array-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.array-input-container input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.remove-item-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-item-btn:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.remove-item-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.add-item-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  margin-top: 8px;
+}
+
+.add-item-btn:hover:not(:disabled) {
+  background-color: #545b62;
+}
+
+.add-item-btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
 /* Mood Buttons */
 .mood-buttons {
   display: flex;
@@ -67,32 +176,27 @@ input[type="text"]:focus {
   border: none;
   cursor: pointer;
   transition: transform 0.15s ease;
-  padding: 0;
+  padding: 8px;
   line-height: 1;
   filter: grayscale(50%);
+  border-radius: 12px;
 }
 
-.mood-buttons button:hover {
+.mood-buttons button:hover:not(:disabled) {
   transform: scale(1.2);
   filter: none;
+  background-color: rgba(40, 176, 184, 0.1);
+}
+
+.mood-buttons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .mood-buttons .selected {
   transform: scale(1.3);
   filter: none;
-}
-
-
-
-/* Responsive tweaks */
-@media (max-width: 600px) {
-  .mood-buttons {
-    flex-direction: column;
-  }
-
-  .mood-buttons button {
-    width: 100%;
-  }
+  background-color: rgba(40, 176, 184, 0.2);
 }
 
 /* Button Saves */
@@ -112,8 +216,41 @@ input[type="text"]:focus {
   cursor: pointer;
   transition: background-color 0.2s ease;
   box-shadow: 0 2px 6px rgba(40, 176, 184, 0.3);
+  min-width: 200px;
 }
 
-.save-journal-button:hover {
+.save-journal-button:hover:not(:disabled) {
   background-color: #1a8c91;
+}
+
+.save-journal-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .journal-container {
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  
+  .mood-buttons {
+    gap: 16px;
+  }
+
+  .mood-buttons button {
+    font-size: 32px;
+  }
+  
+  .array-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .remove-item-btn {
+    align-self: flex-end;
+    margin-top: 4px;
+  }
 }
