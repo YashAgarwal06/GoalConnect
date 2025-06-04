@@ -35,21 +35,6 @@ const goalSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
-  },
-  category: {
-    type: String,
-    trim: true,
-    enum: ['personal', 'work', 'health', 'education', 'other'],
-    default: 'personal'
-  },
-  priority: {
-    type: String,
-    enum: ['low', 'medium', 'high'],
-    default: 'medium'
-  },
-  priorityRank: {
-    type: Number,
-    default: 0
   }
 }, {
   timestamps: true

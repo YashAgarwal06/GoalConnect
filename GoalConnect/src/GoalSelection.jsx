@@ -46,7 +46,7 @@ function GoalSelection() {
 
         if (response.ok) {
           const goals = await response.json();
-          setTodayGoals(goals.sort((a,b)=>(a.priorityRank??0)-(b.priorityRank??0)));
+          setTodayGoals(goals);
         }
       } catch (error) {
         console.error('Error fetching today\'s goals:', error);
@@ -107,6 +107,7 @@ function GoalSelection() {
       return;
     }
 
+    setStatus('⏳ Submitting goal...');
     const token = localStorage.getItem('token');
     if (!token) {
       setStatus('❌ Please log in first.');
@@ -146,10 +147,7 @@ function GoalSelection() {
       
       const goalData = {
         description: selectedGoal,
-        date: today,
-        category: 'personal',
-        priority: 'medium',
-        priorityRank: todayGoals.length
+        date: today
       };
 
       const res = await fetch('http://localhost:3001/api/goals', {
@@ -167,7 +165,7 @@ function GoalSelection() {
       }
 
       const data = await res.json();
-      setTodayGoals(prev => [...prev, {...data, priorityRank: prev.length}]);
+      setTodayGoals(prev => [...prev, data]);
       setStatus(`✅ Goal submitted successfully!`);
       setSelectedGoal('');
     } catch (err) {
