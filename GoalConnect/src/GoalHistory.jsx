@@ -43,7 +43,7 @@ const GoalHistory = () => {
           const uniqueGoals = data.filter((goal, index, self) => 
             index === self.findIndex(g => g.description === goal.description)
           );
-          const sortedGoals = uniqueGoals.sort((a,b)=>(a.priorityRank ?? 0)-(b.priorityRank ?? 0));
+          const sortedGoals = uniqueGoals;
           setDailyGoals(sortedGoals.map(goal => ({
             id: goal._id,
             title: goal.description,
@@ -410,8 +410,6 @@ const GoalHistory = () => {
                           
                           <div className="goal-metadata">
                             <p><strong>Date:</strong> {new Date(selectedGoalForDetails.date).toLocaleDateString()}</p>
-                            <p><strong>Category:</strong> {selectedGoalForDetails.category || 'Personal'}</p>
-                            <p><strong>Priority:</strong> {selectedGoalForDetails.priority || 'Medium'}</p>
                             <p><strong>Status:</strong> 
                               <span className={`status-badge ${selectedGoalForDetails.isCompleted ? 'completed' : 'pending'}`}>
                                 {selectedGoalForDetails.isCompleted ? '✅ Completed' : '⏳ Pending'}
