@@ -136,7 +136,7 @@ router.get('/:id', auth, async (req, res) => {
 // Update a goal
 router.patch('/:id', auth, async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowedUpdates = ['description', 'date', 'isCompleted', 'notes', 'imageUrl', 'imageMetadata'];
+  const allowedUpdates = ['description', 'date', 'isCompleted', 'notes', 'imageUrl', 'imageMetadata', 'priorityRank'];
   const isValidOperation = updates.every(update => allowedUpdates.includes(update));
 
   if (!isValidOperation) {

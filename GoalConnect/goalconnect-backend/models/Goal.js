@@ -35,6 +35,10 @@ const goalSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
+  },
+  priorityRank: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
