@@ -123,14 +123,14 @@ Add the following environment variables to the `.env` file:
 
 **If using MongoDB Atlas:**
 ```env
-PORT=5000
+PORT=3001
 MONGO_URI=mongodb+srv://yourusername:yourpassword@cluster0.xxxxx.mongodb.net/goalconnect?retryWrites=true&w=majority
 JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_random
 ```
 
 **If using local MongoDB:**
 ```env
-PORT=5000
+PORT=3001
 MONGO_URI=mongodb://localhost:27017/goalconnect
 JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_random
 ```
@@ -161,7 +161,7 @@ node server.js
 You should see:
 ```
 Connected to MongoDB
-Server is running on port 5000
+Server is running on port 3001
 ```
 
 #### Terminal 2: Start the Frontend Development Server
@@ -182,7 +182,7 @@ You should see output similar to:
 
 Open your web browser and navigate to:
 - **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:5000
+- **Backend API:** http://localhost:3001
 
 ### Development Scripts
 
@@ -207,8 +207,8 @@ node server.js       # Start the server
 
 1. **Port already in use:**
    ```bash
-   # Kill process on port 5000 (backend)
-   lsof -ti:5000 | xargs kill -9
+   # Kill process on port 3001 (backend)
+   lsof -ti:3001 | xargs kill -9
    
    # Kill process on port 5173 (frontend)
    lsof -ti:5173 | xargs kill -9
