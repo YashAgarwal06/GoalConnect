@@ -83,6 +83,7 @@ input[type="text"]:focus {
 }
 
 
+
 /* Responsive tweaks */
 @media (max-width: 600px) {
   .mood-buttons {
@@ -92,4 +93,27 @@ input[type="text"]:focus {
   .mood-buttons button {
     width: 100%;
   }
+}
+
+/* Button Saves */
+.journal-save-container {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.save-journal-button {
+  background-color: #28b0b8;
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 6px rgba(40, 176, 184, 0.3);
+}
+
+.save-journal-button:hover {
+  background-color: #1a8c91;
 }
