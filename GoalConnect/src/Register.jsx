@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
-const Register = ({ onRegisterSuccess }) => {
+const Register = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
@@ -15,14 +14,20 @@ const Register = ({ onRegisterSuccess }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setMessage('Registration successful! Please login.');
-        if (onRegisterSuccess) {
-          onRegisterSuccess();
+        // Store token and automatically log in
+        localStorage.setItem('token', data.token);
+        setMessage('Registration successful! Logging you in...');
+        
+        // Call onLoginSuccess to automatically log in the user
+        if (onLoginSuccess) {
+          setTimeout(() => {
+            onLoginSuccess();
+          }, 1000); // Small delay to show the success message
         }
       } else {
         setMessage(data.error || 'Registration failed.');
@@ -35,7 +40,6 @@ const Register = ({ onRegisterSuccess }) => {
 
   return (
     <div className="register-container">
-      <h2>Register</h2>
       <form onSubmit={handleRegister}>
         <div className="form-group">
           <label>Username:</label>
@@ -43,15 +47,6 @@ const Register = ({ onRegisterSuccess }) => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>

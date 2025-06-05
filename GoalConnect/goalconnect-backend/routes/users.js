@@ -7,20 +7,18 @@ const auth = require('../middleware/auth');
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, password } = req.body;
     
     // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
+    const existingUser = await User.findOne({ username });
     
     if (existingUser) {
       return res.status(400).json({ 
-        error: 'User with this email or username already exists' 
+        error: 'User with this username already exists' 
       });
     }
 
-    const user = new User({ username, email, password });
+    const user = new User({ username, password });
     await user.save();
 
     const token = jwt.sign(
@@ -38,8 +36,8 @@ router.post('/register', async (req, res) => {
 // Login user
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid login credentials' });

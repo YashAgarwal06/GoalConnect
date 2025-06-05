@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const Login = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
@@ -14,7 +14,7 @@ const Login = ({ onLoginSuccess }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
@@ -35,14 +35,13 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <div className="form-group">
-          <label>Email:</label>
+          <label>Username:</label>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
