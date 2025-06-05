@@ -870,7 +870,7 @@ const GoalHistory = () => {
             <div className="no-milestones">
               <div className="no-milestones-icon">🌟</div>
               <h3>Start Your Journey!</h3>
-              <p>Complete your first goal to unlock your first achievement. Every great journey begins with a single step!</p>
+              <p>Start unlocking achievements! Every great journey begins with a single step!</p>
             </div>
           )}
         </div>

@@ -97,8 +97,9 @@ cd GoalConnect
 If you chose local MongoDB installation, start the service:
 
 ```bash
-# macOS/Linux:
-sudo mongod
+# macOS/Linux - Create data directory and start MongoDB:
+mkdir -p ~/mongo-data
+sudo mongod --dbpath ~/mongo-data
 
 # Or if installed via Homebrew on macOS:
 brew services start mongodb-community
@@ -107,6 +108,10 @@ brew services start mongodb-community
 # MongoDB should start automatically as a service, or run:
 # net start MongoDB
 ```
+
+**Note:** If you get permission errors with the default data directory, the `mkdir -p ~/mongo-data` and `--dbpath ~/mongo-data` approach creates a data directory in your home folder that you have write access to.
+
+**Important:** If you use `sudo mongod --dbpath ~/mongo-data`, this will run MongoDB in the foreground and occupy that terminal. You'll need **3 terminals total**: one for MongoDB, one for backend, and one for frontend.
 
 #### 3. Backend Setup
 
@@ -164,9 +169,24 @@ VITE_API_BASE_URL=http://localhost:3001
 
 ### Running the Application
 
-You'll need to run both the backend and frontend simultaneously. Use two separate terminal windows/tabs:
+You'll need to run both the backend and frontend simultaneously. Use two or three separate terminal windows/tabs:
 
-#### Terminal 1: Start the Backend Server
+**If using local MongoDB with `sudo mongod --dbpath ~/mongo-data`:**
+- You'll need **3 terminals**: MongoDB, backend, and frontend
+
+**If using MongoDB Atlas or Homebrew MongoDB service:**
+- You'll need **2 terminals**: backend and frontend
+
+#### Terminal 1: Start MongoDB (Only if using local MongoDB with manual start)
+```bash
+cd GoalConnect
+mkdir -p ~/mongo-data
+sudo mongod --dbpath ~/mongo-data
+```
+
+Keep this terminal running. You should see MongoDB startup messages.
+
+#### Terminal 2 (or 1 if using Atlas/Homebrew): Start the Backend Server
 ```bash
 cd GoalConnect/goalconnect-backend
 node server.js
@@ -178,7 +198,7 @@ Connected to MongoDB
 Server is running on port 3001
 ```
 
-#### Terminal 2: Start the Frontend Development Server
+#### Terminal 3 (or 2 if using Atlas/Homebrew): Start the Frontend Development Server
 ```bash
 cd GoalConnect
 npm run dev
@@ -261,14 +281,21 @@ node server.js       # Start the server
    - Verify `VITE_API_BASE_URL` in frontend `.env` matches backend port
    - Check browser console for connection errors
 
-5. **Module not found errors:**
+5. **"Cannot find module 'dotenv'" error:**
+   ```bash
+   # If you get this error when starting the backend, install dotenv:
+   cd GoalConnect/goalconnect-backend
+   npm install dotenv
+   ```
+
+6. **Module not found errors:**
    ```bash
    # Delete node_modules and reinstall
    rm -rf node_modules package-lock.json
    npm install
    ```
 
-6. **Permission errors (Linux/macOS):**
+7. **Permission errors (Linux/macOS):**
    ```bash
    # Fix npm permissions
    sudo chown -R $(whoami) ~/.npm
