@@ -1008,6 +1008,9 @@ input::placeholder {
   text-align: left;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
 }
 
 .milestone-card:hover {
@@ -1124,10 +1127,11 @@ input::placeholder {
   margin-bottom: 20px;
   line-height: 1.6;
   font-size: 0.95rem;
+  flex-grow: 1;
 }
 
 .milestone-progress {
-  margin-top: 15px;
+  margin-top: auto;
 }
 
 .progress-text {
@@ -1153,7 +1157,7 @@ input::placeholder {
 }
 
 .achievement-badge {
-  margin-top: 15px;
+  margin-top: auto;
   text-align: center;
 }
 
