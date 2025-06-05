@@ -256,19 +256,6 @@ node server.js       # Start the server
    sudo chown -R $(whoami) ~/.npm
    ```
 
-### Project Structure
-```
-GoalConnect/
-├── src/                    # React frontend source code
-├── public/                 # Static assets
-├── goalconnect-backend/    # Node.js backend
-│   ├── routes/            # API routes
-│   ├── models/            # Database models
-│   ├── middleware/        # Express middleware
-│   └── server.js          # Main server file
-├── package.json           # Frontend dependencies
-└── README.md              # This file
-```
 
 ### Technologies Used
 - **Frontend:** React 19, Vite, React Calendar
@@ -278,4 +265,4 @@ GoalConnect/
 
 ---
 
-Happy coding! 🎯
+Happy coding! 
