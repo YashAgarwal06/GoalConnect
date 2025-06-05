@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './GoalSelection.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
 const goalOptions = [
   'Exercise or move your body',
   'Practice mindfulness or meditation',
@@ -41,7 +43,7 @@ function GoalSelection() {
         const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const dateString = utcDate.toISOString().split('T')[0];
         
-        const response = await fetch(`http://localhost:3001/api/goals/date/${dateString}`, {
+        const response = await fetch(`${API_BASE_URL}/api/goals/date/${dateString}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -125,7 +127,7 @@ function GoalSelection() {
       const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const dateString = utcDate.toISOString().split('T')[0];
       
-      const checkResponse = await fetch(`http://localhost:3001/api/goals/date/${dateString}`, {
+      const checkResponse = await fetch(`${API_BASE_URL}/api/goals/date/${dateString}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -159,7 +161,7 @@ function GoalSelection() {
         date: utcDate
       };
 
-      const res = await fetch('http://localhost:3001/api/goals', {
+      const res = await fetch(`${API_BASE_URL}/api/goals`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -188,7 +190,7 @@ function GoalSelection() {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:3001/api/goals/${currentGoal._id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/goals/${currentGoal._id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -246,7 +248,7 @@ function GoalSelection() {
     formData.append('image', imageFile);
 
     try {
-      const response = await fetch(`http://localhost:3001/api/goals/${currentGoal._id}/upload-image`, {
+      const response = await fetch(`${API_BASE_URL}/api/goals/${currentGoal._id}/upload-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -321,7 +323,7 @@ function GoalSelection() {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/goals/${goalId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/goals/${goalId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -343,7 +345,7 @@ function GoalSelection() {
   const updateGoalPriority = async (goalId, newRank) => {
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://localhost:3001/api/goals/${goalId}`, {
+      await fetch(`${API_BASE_URL}/api/goals/${goalId}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -551,7 +553,7 @@ function GoalSelection() {
                   {currentGoal.imageUrl && (
                     <div className="uploaded-image-container">
                       <div className="uploaded-image-display">
-                        <img src={`http://localhost:3001/${currentGoal.imageUrl}`} alt="Goal memory" className="uploaded-image" />
+                        <img src={`${API_BASE_URL}/${currentGoal.imageUrl}`} alt="Goal memory" className="uploaded-image" />
                       </div>
                       <div className="image-status">
                         <span className="success-message">✅ Image uploaded!</span>
@@ -736,7 +738,7 @@ function GoalSelection() {
                 {currentGoal.imageUrl && (
                   <div className="uploaded-image-container">
                     <div className="uploaded-image-display">
-                      <img src={`http://localhost:3001/${currentGoal.imageUrl}`} alt="Goal memory" className="uploaded-image" />
+                      <img src={`${API_BASE_URL}/${currentGoal.imageUrl}`} alt="Goal memory" className="uploaded-image" />
                     </div>
                     <div className="image-status">
                       <span className="success-message">✅ Image uploaded!</span>

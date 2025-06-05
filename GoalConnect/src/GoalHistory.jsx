@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
 const GoalHistory = () => {
   const [selectedTimeMetric, setSelectedTimeMetric] = useState('7days');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -36,7 +38,7 @@ const GoalHistory = () => {
         const formattedDate = date.toISOString().split('T')[0];
         const token = localStorage.getItem('token');
         
-        const response = await fetch(`http://localhost:3001/api/goals/date/${formattedDate}`, {
+        const response = await fetch(`${API_BASE_URL}/api/goals/date/${formattedDate}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -76,7 +78,7 @@ const GoalHistory = () => {
     const fetchStatistics = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3001/api/goals/stats/${selectedTimeMetric}`, {
+        const response = await fetch(`${API_BASE_URL}/api/goals/stats/${selectedTimeMetric}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -117,7 +119,7 @@ const GoalHistory = () => {
           checkDate.setHours(0, 0, 0, 0);
           const formattedDate = checkDate.toISOString().split('T')[0];
           
-          const response = await fetch(`http://localhost:3001/api/goals/date/${formattedDate}`, {
+          const response = await fetch(`${API_BASE_URL}/api/goals/date/${formattedDate}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -168,7 +170,7 @@ const GoalHistory = () => {
         }
         
         // Try the new stats/all endpoint first
-        let response = await fetch('http://localhost:3001/api/goals/stats/all', {
+        let response = await fetch(`${API_BASE_URL}/api/goals/stats/all`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -180,7 +182,7 @@ const GoalHistory = () => {
           data = await response.json();
         } else {
           // Fallback: get all goals and calculate manually
-          response = await fetch('http://localhost:3001/api/goals', {
+          response = await fetch(`${API_BASE_URL}/api/goals`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -239,7 +241,7 @@ const GoalHistory = () => {
       const token = localStorage.getItem('token');
       const goalToUpdate = dailyGoals.find(g => g.id === goalId);
       
-      const response = await fetch(`http://localhost:3001/api/goals/${goalId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/goals/${goalId}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -259,7 +261,7 @@ const GoalHistory = () => {
         
         // Refresh statistics after goal completion change
         if (activeTab === 'stats') {
-          const statsResponse = await fetch(`http://localhost:3001/api/goals/stats/${selectedTimeMetric}`, {
+          const statsResponse = await fetch(`${API_BASE_URL}/api/goals/stats/${selectedTimeMetric}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -288,7 +290,7 @@ const GoalHistory = () => {
       const formattedDate = date.toISOString().split('T')[0];
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:3001/api/journal/date/${formattedDate}`, {
+              const response = await fetch(`${API_BASE_URL}/api/journal/date/${formattedDate}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -632,7 +634,7 @@ const GoalHistory = () => {
                               <h5>📷 Memory:</h5>
                               <div className="goal-image-container">
                                 <img 
-                                  src={`http://localhost:3001/${selectedGoalForDetails.imageUrl}`}
+                                  src={`${API_BASE_URL}/${selectedGoalForDetails.imageUrl}`}
                                   alt="Goal memory"
                                   className="goal-detail-image"
                                 />

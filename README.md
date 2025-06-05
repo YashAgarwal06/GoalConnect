@@ -89,7 +89,7 @@ sudo apt install mongodb-org
 
 #### 1. Clone the Repository
 ```bash
-git clone <your-repository-url>
+git clone <https://github.com/YashAgarwal06/GoalConnect.git>
 cd GoalConnect
 ```
 
@@ -149,6 +149,18 @@ Open a new terminal window/tab and navigate to the frontend directory:
 cd GoalConnect
 npm install
 ```
+
+Create a `.env` file in the frontend directory:
+```bash
+touch .env
+```
+
+Add the following environment variable to the `.env` file:
+```env
+VITE_API_BASE_URL=http://localhost:3001
+```
+
+**Note:** This allows you to easily change the backend URL if needed. If you change the backend port in step 3, make sure to update this URL accordingly.
 
 ### Running the Application
 
@@ -243,14 +255,20 @@ node server.js       # Start the server
    
    **Note:** Your IP address may change if you're on a dynamic network (home WiFi, mobile hotspot, etc.). You may need to repeat this process if you change networks.
 
-4. **Module not found errors:**
+4. **Frontend can't connect to backend:**
+   - Ensure both frontend and backend are running
+   - Check that backend is running on the port specified in frontend's `.env` file
+   - Verify `VITE_API_BASE_URL` in frontend `.env` matches backend port
+   - Check browser console for connection errors
+
+5. **Module not found errors:**
    ```bash
    # Delete node_modules and reinstall
    rm -rf node_modules package-lock.json
    npm install
    ```
 
-5. **Permission errors (Linux/macOS):**
+6. **Permission errors (Linux/macOS):**
    ```bash
    # Fix npm permissions
    sudo chown -R $(whoami) ~/.npm

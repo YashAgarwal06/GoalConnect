@@ -13,6 +13,8 @@ const Journal = () => {
   const [error, setError] = useState(null);
   const [existingEntryId, setExistingEntryId] = useState(null);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
   // Load existing journal entry for today on mount
   useEffect(() => {
     const loadTodaysEntry = async () => {
@@ -24,7 +26,7 @@ const Journal = () => {
         const dateString = utcDate.toISOString().split('T')[0];
         const token = localStorage.getItem('token');
         
-        const response = await fetch(`http://localhost:3001/api/journal/date/${dateString}`, {
+        const response = await fetch(`${API_BASE_URL}/api/journal/date/${dateString}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -134,7 +136,7 @@ const Journal = () => {
       if (existingEntryId) {
         // Update existing entry
         console.log('Updating existing entry:', existingEntryId);
-        response = await fetch(`http://localhost:3001/api/journal/${existingEntryId}`, {
+        response = await fetch(`${API_BASE_URL}/api/journal/${existingEntryId}`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -145,7 +147,7 @@ const Journal = () => {
       } else {
         // Create new entry
         console.log('Creating new entry');
-        response = await fetch('http://localhost:3001/api/journal', {
+        response = await fetch(`${API_BASE_URL}/api/journal`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

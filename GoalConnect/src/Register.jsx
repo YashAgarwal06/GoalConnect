@@ -5,11 +5,13 @@ const Register = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setMessage('');
     try {
-      const res = await fetch('http://localhost:3001/api/users/register', {
+      const res = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
