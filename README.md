@@ -97,12 +97,12 @@ cd GoalConnect
 If you chose local MongoDB installation, start the service:
 
 ```bash
+# If installed via Homebrew on macOS:
+brew services start mongodb-community
+
 # macOS/Linux - Create data directory and start MongoDB:
 mkdir -p ~/mongo-data
 sudo mongod --dbpath ~/mongo-data
-
-# Or if installed via Homebrew on macOS:
-brew services start mongodb-community
 
 # Windows: 
 # MongoDB should start automatically as a service, or run:
