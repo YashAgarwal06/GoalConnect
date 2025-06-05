@@ -18,6 +18,10 @@ const Home = ({ onGetStarted }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleQuoteDotClick = (index) => {
+    setCurrentQuote(index);
+  };
+
   return (
     <div className="home-container">
       {/* Hero Section */}
@@ -104,13 +108,13 @@ const Home = ({ onGetStarted }) => {
       {/* Motivational Quote Section */}
       <section className="quote-section">
         <div className="quote-container">
-          <div className="quote-mark">"</div>
           <p className="rotating-quote">{motivationalQuotes[currentQuote]}</p>
           <div className="quote-dots">
             {motivationalQuotes.map((_, index) => (
               <span 
                 key={index} 
                 className={`quote-dot ${index === currentQuote ? 'active' : ''}`}
+                onClick={() => handleQuoteDotClick(index)}
               ></span>
             ))}
           </div>

@@ -1655,7 +1655,7 @@ input::placeholder {
 
 /* How It Works Section */
 .how-it-works {
-  padding: 120px 40px 80px 40px;
+  padding: 60px 40px 80px 40px;
   background: white;
   text-align: center;
   scroll-margin-top: 80px;
@@ -1714,7 +1714,7 @@ input::placeholder {
 
 /* Features Section */
 .features-section {
-  padding: 120px 40px 80px 40px;
+  padding: 60px 40px 80px 40px;
   background: var(--background);
   text-align: center;
   scroll-margin-top: 80px;
@@ -1956,7 +1956,10 @@ input::placeholder {
   }
   
   .how-it-works,
-  .features-section,
+  .features-section {
+    padding: 60px 20px 60px 20px;
+  }
+  
   .quote-section,
   .categories-preview,
   .final-cta {
@@ -1974,7 +1977,10 @@ input::placeholder {
   }
   
   .how-it-works,
-  .features-section,
+  .features-section {
+    padding: 40px 15px 40px 15px;
+  }
+  
   .quote-section,
   .categories-preview,
   .final-cta {
