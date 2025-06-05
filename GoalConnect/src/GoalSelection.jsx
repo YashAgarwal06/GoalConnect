@@ -36,8 +36,12 @@ function GoalSelection() {
       if (!token) return;
 
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:3001/api/goals/date/${today}`, {
+        // Use consistent date handling - create date in UTC
+        const today = new Date();
+        const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const dateString = utcDate.toISOString().split('T')[0];
+        
+        const response = await fetch(`http://localhost:3001/api/goals/date/${dateString}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -116,8 +120,12 @@ function GoalSelection() {
 
     // Check if this goal already exists for today
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const checkResponse = await fetch(`http://localhost:3001/api/goals/date/${today}`, {
+      // Use consistent date handling
+      const today = new Date();
+      const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const dateString = utcDate.toISOString().split('T')[0];
+      
+      const checkResponse = await fetch(`http://localhost:3001/api/goals/date/${dateString}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -142,12 +150,13 @@ function GoalSelection() {
     setStatus('Submitting...');
 
     try {
+      // Use consistent date handling - create date in UTC to match query
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       
       const goalData = {
         description: selectedGoal,
-        date: today
+        date: utcDate
       };
 
       const res = await fetch('http://localhost:3001/api/goals', {

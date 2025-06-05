@@ -18,10 +18,13 @@ const Journal = () => {
     const loadTodaysEntry = async () => {
       try {
         setIsLoading(true);
-        const today = new Date().toISOString().split('T')[0];
+        // Use consistent date handling - create date in UTC
+        const today = new Date();
+        const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const dateString = utcDate.toISOString().split('T')[0];
         const token = localStorage.getItem('token');
         
-        const response = await fetch(`http://localhost:3001/api/journal/date/${today}`, {
+        const response = await fetch(`http://localhost:3001/api/journal/date/${dateString}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -102,17 +105,20 @@ const Journal = () => {
       setIsLoading(true);
       setError(null);
       
-      const today = new Date().toISOString().split('T')[0];
+      // Use consistent date handling - create date in UTC
+      const today = new Date();
+      const utcDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const dateString = utcDate.toISOString().split('T')[0];
       const token = localStorage.getItem('token');
       
-      console.log('Saving journal entry...', { existingEntryId, today });
+      console.log('Saving journal entry...', { existingEntryId, dateString });
       
       // Filter out empty strings from arrays
       const filteredGratitude = gratitude.filter(item => item.trim() !== '');
       const filteredChallenges = challenges.filter(item => item.trim() !== '');
 
       const journalEntry = {
-        date: today,
+        date: dateString,
         title: title.trim(),
         content: reflection.trim(),
         mood: mapMoodToBackend(mood),
