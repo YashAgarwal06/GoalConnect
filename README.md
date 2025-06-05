@@ -2,7 +2,7 @@
 
 A goal tracking application built with React (Vite) frontend and Node.js/Express backend.
 
-## 🚀 Running Locally
+## Running Locally
 
 Follow these step-by-step instructions to set up and run GoalConnect on your local machine.
 
@@ -59,7 +59,8 @@ You have two options for the database:
    - Go to "Network Access" in the left sidebar
    - Click "Add IP Address"
    - Click "Add Current IP Address"
-        - (if switching IP addresses constantly, click "Allow Access from Anywhere" making it ip:0.0.0.0/0 which would be technically insecure so try to avoid) 
+        - (if switching IP addresses constantly, click "Allow Access from Anywhere" making it ip:0.0.0.0/0 which would be technically insecure so try to avoid)
+        - See issues for more details below
    - Click "Confirm"
 
 5. **Get your connection string:**
@@ -179,7 +180,7 @@ You should see output similar to:
   ➜  Network: use --host to expose
 ```
 
-### 🎉 Access the Application
+### Access the Application
 
 Open your web browser and navigate to:
 - **Frontend:** http://localhost:5173
@@ -255,19 +256,6 @@ node server.js       # Start the server
    sudo chown -R $(whoami) ~/.npm
    ```
 
-### Project Structure
-```
-GoalConnect/
-├── src/                    # React frontend source code
-├── public/                 # Static assets
-├── goalconnect-backend/    # Node.js backend
-│   ├── routes/            # API routes
-│   ├── models/            # Database models
-│   ├── middleware/        # Express middleware
-│   └── server.js          # Main server file
-├── package.json           # Frontend dependencies
-└── README.md              # This file
-```
 
 ### Technologies Used
 - **Frontend:** React 19, Vite, React Calendar
@@ -277,4 +265,4 @@ GoalConnect/
 
 ---
 
-Happy coding! 🎯
+Happy coding! 
